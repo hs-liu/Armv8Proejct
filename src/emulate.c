@@ -7,6 +7,9 @@
 #define MEMORY_CAPACITY (2 * 1024 * 1024)
 #define WORD_SIZE_BYTES 4
 
+#define NOP_INSTRUCTION 0xD503201F
+#define HALT_INSTRUCTION 0x8A000000
+
 #define OP0_OFFSET 25
 #define OP0_SIZE 4
 
@@ -125,6 +128,14 @@ void emulate_cycle(state_t *cpu_state) {
 
   cpu_state->PC.X += WORD_SIZE_BYTES; // TODO: Remove this
   printf("0x%08lx: %08x\n", cpu_state->PC.X, instruction);
+
+  if (instruction == NOP_INSTRUCTION) {
+    return;
+  }
+
+  if (instruction == HALT_INSTRUCTION) {
+    exit(EXIT_SUCCESS);
+  }
 
   if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
     // TODO: implement data processing (immediate) instructions
