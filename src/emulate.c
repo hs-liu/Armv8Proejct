@@ -10,6 +10,10 @@
 #define NOP_INSTRUCTION 0xD503201F
 #define HALT_INSTRUCTION 0x8A000000
 
+#define UNCON_BRANCH 0x00000005
+#define REGISTER_BRANCH 0x00000035
+#define CON_BRANCH 0x00000015
+
 #define OP0_OFFSET 25
 #define OP0_SIZE 4
 
@@ -156,9 +160,60 @@ void emulate_cycle(state_t *cpu_state) {
 
   if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
     // TODO: implement branch instructions
+    branch_instruction(cpu_state, instruction);
     printf(": implement branch instructions\n");
   }
 
+}
+
+void branch_instruction(state_t *cpu_state, uint32_t instruction) {
+  uint32_t opcode = instruction >> OP0_OFFSET;
+  if (opcode == UNCON_BRANCH) {
+    int64_t extended_offset = (instruction & 0x3FFFFFF) << 38 >> 38;
+    cpu_state->PC.X += extended_offset;
+  } else if (opcode == REGISTER_BRANCH) {
+    int register_index = (((1 << 5) - 1) & (instruction >> 5));
+    cpu_state->PC.X = &(cpu_state->R[register_index]);
+  } else if (opcode == CON_BRANCH) {
+    int64_t extended_offset = ((instruction & 0xFFFFE0) >> 5) << 45 >> 45;
+    switch(instruction & 0xF) {
+      case 0x0:
+          if (cpu_state->PSTATE.Z != 1) {
+            break;
+          }
+          break;
+      case 0x1:
+          if (cpu_state->PSTATE.Z != 0) {
+            break;
+          }
+          break;
+      case 0xA:
+          if (cpu_state->PSTATE.N != 1) {
+            break;
+          }
+          break;
+      case 0xB:
+          if (cpu_state->PSTATE.Z == 1) {
+            break;
+          }
+          break;
+      case 0xC:
+          if (cpu_state->PSTATE.Z != 0 || 
+              cpu_state->PSTATE.N != cpu_state->PSTATE.V) {
+            break;
+          }
+          break;
+      case 0xD:
+          if (cpu_state->PSTATE.Z == 0 && 
+              cpu_state->PSTATE.N == cpu_state->PSTATE.V) {
+            break;
+          }
+          break;
+      case 0xE:
+      default: 
+          cpu_state->PC.X += extended_offset;
+    }
+  }
 }
 
 
