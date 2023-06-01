@@ -28,18 +28,6 @@
 #define SELECT_BITS(value, offset, size) ((value >> offset) & ((1 << size) - 1))
 #define CHECK_BITS(value, mask, target_value) ((value & mask) == target_value) 
 
-// #define OP0_DPIMM_MASK 0b1110
-// #define OP0_DPIMM_VALUE 0b1000
-
-// #define OP0_DPREG_MASK 0b0111
-// #define OP0_DPREG_VALUE 0b0101
-
-// #define OP0_LS_MASK 0b0101
-// #define OP0_LS_VALUE 0b0100
-
-// #define OP0_BRANCH_MASK 0b1110
-// #define OP0_BRANCH_VALUE 0b1010
-
 #define OP0_DPIMM_MASK 0xE
 #define OP0_DPIMM_VALUE 0x8
 
@@ -75,9 +63,6 @@ typedef struct {
 
 uint8_t main_memory[MEMORY_CAPACITY];
 
-void lsl(state_t *state, int shift_amount) {
-
-}
 
 void setup(state_t *cpu_state) {
   memset(cpu_state, 0, sizeof(state_t));
