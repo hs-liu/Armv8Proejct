@@ -103,3 +103,19 @@ void bics_32(state_t *state, int dest, int src1, int src2) {
   state->PSTATE.C = 0;
   state->PSTATE.V = 0;
 }
+
+void madd_64(state_t *state, int dest, int src, int rn, int rm) {
+  state->R[dest].X = state->R[src].X + state->R[rn].X * state->R[rm].X;
+}
+
+void madd_32(state_t *state, int dest, int src, int rn, int rm) {
+  state->R[dest].W = state->R[src].W + state->R[rn].W * state->R[rm].W;
+}
+
+void msub_64(state_t *state, int dest, int src, int rn, int rm) {
+  state->R[dest].X = state->R[src].X - state->R[rn].X * state->R[rm].X;
+}
+
+void msub_32(state_t *state, int dest, int src, int rn, int rm) {
+  state->R[dest].W = state->R[src].W - state->R[rn].W * state->R[rm].W;
+}
