@@ -65,6 +65,29 @@ uint32_t fetch_word(uint64_t address) {
   return *(uint32_t *)&main_memory[address];
 }
 
+void output_result(state_t *cpu_state) {
+  FILE *fp = fopen("./a.out", "w");
+
+  fputs("Registers:\n", fp);
+  for (int i = 0; i < 31; i++) {
+    fprintf(fp, "X%02d    = %016lx\n", i, cpu_state->R[i].X);
+  }
+  fprintf(fp, "PC     = %016lx\n", cpu_state->PC.X);
+  char n_flag = cpu_state->PSTATE.N ? 'N' : '-';
+  char z_flag = cpu_state->PSTATE.Z ? 'Z' : '-';
+  char c_flag = cpu_state->PSTATE.C ? 'C' : '-';
+  char v_flag = cpu_state->PSTATE.V ? 'V' : '-';
+  fprintf(fp, "PSTATE = %c%c%c%c\n", n_flag, z_flag, c_flag, v_flag);
+
+  fputs("Non-Zero Memory:\n", fp);
+  for (uint64_t addr = 0; addr < MEMORY_CAPACITY; addr += WORD_SIZE_BYTES) {
+    uint32_t word = fetch_word(addr);
+    if (word) {
+      fprintf(fp, "0x%08lx : %08x\n", addr, word);
+    }
+  }
+}
+
 void emulate_cycle(state_t *cpu_state) {
   // Fetch
   uint32_t instruction = fetch_word(cpu_state->PC.X);
@@ -80,6 +103,7 @@ void emulate_cycle(state_t *cpu_state) {
   }
 
   if (instruction == HALT_INSTRUCTION) {
+    output_result(cpu_state);
     exit(EXIT_SUCCESS);
   }
 
@@ -114,7 +138,6 @@ int main(int argc, char **argv) {
   state_t cpu_state;
   setup(&cpu_state);
   load_bin_to_memory(argv[1]);
-
   
   while (true) {
     emulate_cycle(&cpu_state);
