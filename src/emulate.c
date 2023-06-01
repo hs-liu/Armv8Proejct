@@ -10,6 +10,18 @@
 #define NOP_INSTRUCTION 0xD503201F
 #define HALT_INSTRUCTION 0x8A000000
 
+#define UNCON_BRANCH 0x00000005
+#define REGISTER_BRANCH 0x00000035
+#define CON_BRANCH 0x00000015
+
+#define EQ 0x0
+#define NE 0x1
+#define GE 0xA
+#define LT 0xB
+#define GT 0xC
+#define LE 0xD
+#define AL 0xE
+
 #define OP0_OFFSET 25
 #define OP0_SIZE 4
 
@@ -156,11 +168,49 @@ void emulate_cycle(state_t *cpu_state) {
 
   if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
     // TODO: implement branch instructions
+    branch_instruction(cpu_state, instruction);
     printf(": implement branch instructions\n");
   }
 
 }
 
+void branch_instruction(state_t *cpu_state, uint32_t instruction) {
+  uint32_t opcode = instruction >> OP0_OFFSET;
+  if (opcode == UNCON_BRANCH) {
+    int64_t simm26 = (instruction & 0x3FFFFFF) * 4;
+    simm26 = simm26 << 38 >> 38;
+    cpu_state->PC.X += simm26;
+  } else if (opcode == REGISTER_BRANCH) {
+    int register_index = (((1 << 5) - 1) & (instruction >> 5));
+    cpu_state->PC.X = cpu_state->R[register_index].X;
+  } else if (opcode == CON_BRANCH) {
+    int64_t simm19 = ((instruction & 0xFFFFE0) >> 5) * 4;
+    simm19 = simm19 << 45 >> 45;
+    uint8_t cond = instruction & 0xF;
+    conditional_branch(cpu_state, simm19, cond);
+  }
+}
+
+void conditional_branch(state_t *cpu_state, int64_t offset, uint8_t cond) {
+  bool jump;
+  switch(cond) {
+    case EQ:
+      jump = cpu_state->PSTATE.Z == 1;
+    case NE:
+      jump = cpu_state->PSTATE.Z == 0;
+    case GE:
+      jump = cpu_state->PSTATE.N == 1;
+    case LT:
+      jump = cpu_state->PSTATE.N != 1;
+    case GT:
+      jump = cpu_state->PSTATE.Z == 0 && cpu_state->PSTATE.N == cpu_state->PSTATE.V;
+    case LE:
+      jump = !(cpu_state->PSTATE.Z == 0 && cpu_state->PSTATE.N == cpu_state->PSTATE.V);
+    case AL:
+    default:
+      cpu_state->PC.X += offset;
+  }
+}
 
 int main(int argc, char **argv) {
   if (argc != 2) {
