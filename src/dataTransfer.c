@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#DEFINE MEMORY_CAPACITY (2 * 1024 * 1024)
+#define MEMORY_CAPACITY (2 * 1024 * 1024)
 
 typedef struct {
   bool N;
