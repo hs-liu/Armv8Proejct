@@ -19,6 +19,9 @@
 #define OP0_BRANCH_MASK 0xE
 #define OP0_BRANCH_VALUE 0xA
 
+#define SELECT_BITS(value, offset, size) ((value >> offset) & ((1 << size) - 1))
+#define CHECK_BITS(value, mask, target_value) ((value & mask) == target_value) 
+
 typedef struct {
   bool N;
   bool Z;
