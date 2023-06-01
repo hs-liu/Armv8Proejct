@@ -65,7 +65,41 @@ uint32_t fetch_word(uint64_t address) {
   return *(uint32_t *)&main_memory[address];
 }
 
-void emulate_cycle(state_t *cpu_state) {
+void output_result(state_t *cpu_state) {
+  char *file_name = "a.out";
+  FILE *fp = fopen(file_name, "w");
+
+  if (fp == NULL) {
+    fprintf(stderr, "Error writing to output file %s\n", file_name);
+    return;
+  }
+
+  fprintf(fp, "Registers:\n");
+  for (int i = 0; i < 31; i++) {
+    fprintf(fp, "X%02d    = %016lx\n", i, cpu_state->R[i].X);
+  }
+  fprintf(fp, "PC     = %016lx\n", cpu_state->PC.X);
+  char n_flag = cpu_state->PSTATE.N ? 'N' : '-';
+  char z_flag = cpu_state->PSTATE.Z ? 'Z' : '-';
+  char c_flag = cpu_state->PSTATE.C ? 'C' : '-';
+  char v_flag = cpu_state->PSTATE.V ? 'V' : '-';
+  fprintf(fp, "PSTATE = %c%c%c%c\n", n_flag, z_flag, c_flag, v_flag);
+
+  fprintf(fp, "Non-Zero Memory:\n");
+  for (uint64_t addr = 0; addr < MEMORY_CAPACITY; addr += WORD_SIZE_BYTES) {
+    uint32_t word = fetch_word(addr);
+    if (word) {
+      fprintf(fp, "0x%08lx : %08x\n", addr, word);
+    }
+  }
+
+  printf("Output written to %s\n", file_name);
+}
+
+/**
+ * Return value is true iff the program is to continue running
+*/
+bool emulate_cycle(state_t *cpu_state) {
   // Fetch
   uint32_t instruction = fetch_word(cpu_state->PC.X);
 
@@ -76,11 +110,11 @@ void emulate_cycle(state_t *cpu_state) {
   printf("0x%08lx: %08x\n", cpu_state->PC.X, instruction);
 
   if (instruction == NOP_INSTRUCTION) {
-    return;
+    return true;
   }
 
   if (instruction == HALT_INSTRUCTION) {
-    exit(EXIT_SUCCESS);
+    return false;
   }
 
   if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
@@ -105,6 +139,8 @@ void emulate_cycle(state_t *cpu_state) {
     branch_instruction(cpu_state, instruction);
     printf(": implement branch instructions\n");
   }
+
+  return true;
 }
 
 int main(int argc, char **argv) {
@@ -114,11 +150,13 @@ int main(int argc, char **argv) {
   state_t cpu_state;
   setup(&cpu_state);
   load_bin_to_memory(argv[1]);
-
   
-  while (true) {
-    emulate_cycle(&cpu_state);
-  }
+  bool continue_running = true;
+  do {
+    continue_running = emulate_cycle(&cpu_state);
+  } while (continue_running);
+
+  output_result(&cpu_state);
 
   return EXIT_SUCCESS;
 }
