@@ -7,11 +7,7 @@
 #include "emulate.h"
 #include "branch.h"
 
-#define SELECT_BITS(value, offset, size) ((value >> offset) & ((1 << size) - 1))
-#define CHECK_BITS(value, mask, target_value) ((value & mask) == target_value) 
-
 uint8_t main_memory[MEMORY_CAPACITY];
-
 
 void setup(state_t *cpu_state) {
   memset(cpu_state, 0, sizeof(state_t));
@@ -135,9 +131,7 @@ bool emulate_cycle(state_t *cpu_state) {
   }
 
   if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
-    // TODO: implement branch instructions
     branch_instruction(cpu_state, instruction);
-    printf(": implement branch instructions\n");
   }
 
   return true;
