@@ -1,6 +1,3 @@
-#define SF_32 0
-#define SF_64 1
-
 #define DPREG_OFFSET 25
 #define DPREG_SIZE 3
 

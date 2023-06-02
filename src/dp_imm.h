@@ -9,6 +9,7 @@
 
 #define IMM_OPI_OFFSET 23
 #define IMM_OPI_SIZE 3
+#define IMM_VALUE 0x4
 
 #define IMM_OPERAND_OFFSET 5
 #define IMM_OPERAND_SIZE 18
@@ -18,3 +19,32 @@
 
 #define SF_32 0
 #define SF_64 1
+
+#define IMM_ARITHMETIC_OPI 0x2
+#define IMM_WIDE_MOVE_OPI 0x5
+
+#define IMM_SH_OFFSET 22
+#define IMM_SH_SIZE 1
+
+#define IMM_IMM12_OFFSET 10
+#define IMM_IMM12_SIZE 12
+
+#define IMM_RN_OFFSET 5
+#define IMM_RN_SIZE 5
+
+#define ADD_OPC 0x0
+#define ADDS_OPC 0x1
+#define SUB_OPC 0x2
+#define SUBS_OPC 0x3
+
+#define ZR_REG 0x1f
+
+#define IMM_HW_OFFSET 21
+#define IMM_HW_SIZE 1
+
+#define IMM_IMM16_OFFSET 5
+#define IMM_IMM16_SIZE 16
+
+#define MOVN_OPC 0x0
+#define MOVZ_OPC 0x2
+#define MOVK_OPC 0x3
