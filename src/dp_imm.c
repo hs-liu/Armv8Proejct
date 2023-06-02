@@ -9,6 +9,7 @@
 
 
 //TOOO: double check flags, especially V
+//TODO: if register is not regular register, but stack pointer
 void set_NV_flags_64(state_t *state, uint64_t result) {
   state->PSTATE.N = (result >> 63) & 1;
   state->PSTATE.Z = (result == 0);
