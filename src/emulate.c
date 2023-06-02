@@ -12,6 +12,7 @@ uint8_t main_memory[MEMORY_CAPACITY];
 void setup(state_t *cpu_state) {
   memset(cpu_state, 0, sizeof(state_t));
   memset(main_memory, 0, sizeof main_memory);
+  cpu_state->PSTATE.Z = 1;
 }
 
 void print_usage(void) {
