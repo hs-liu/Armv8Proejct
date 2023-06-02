@@ -15,8 +15,7 @@ void setup(state_t *cpu_state) {
 }
 
 void print_usage(void) {
-  fprintf(stderr, "Usage: ./emulate input_file\n");
-  exit(EXIT_FAILURE);
+  fprintf(stderr, "Usage: ./emulate <bin_file> [<out_file>]\n");
 }
 
 void load_bin_to_memory(char *file_name) {
@@ -61,15 +60,7 @@ uint32_t fetch_word(uint64_t address) {
   return *(uint32_t *)&main_memory[address];
 }
 
-void output_result(state_t *cpu_state) {
-  char *file_name = "a.out";
-  FILE *fp = fopen(file_name, "w");
-
-  if (fp == NULL) {
-    fprintf(stderr, "Error writing to output file %s\n", file_name);
-    return;
-  }
-
+void output_result(state_t *cpu_state, FILE *fp) {
   fprintf(fp, "Registers:\n");
   for (int i = 0; i < 31; i++) {
     fprintf(fp, "X%02d    = %016lx\n", i, cpu_state->R[i].X);
@@ -79,7 +70,7 @@ void output_result(state_t *cpu_state) {
   char z_flag = cpu_state->PSTATE.Z ? 'Z' : '-';
   char c_flag = cpu_state->PSTATE.C ? 'C' : '-';
   char v_flag = cpu_state->PSTATE.V ? 'V' : '-';
-  fprintf(fp, "PSTATE = %c%c%c%c\n", n_flag, z_flag, c_flag, v_flag);
+  fprintf(fp, "PSTATE : %c%c%c%c\n", n_flag, z_flag, c_flag, v_flag);
 
   fprintf(fp, "Non-Zero Memory:\n");
   for (uint64_t addr = 0; addr < MEMORY_CAPACITY; addr += WORD_SIZE_BYTES) {
@@ -88,8 +79,6 @@ void output_result(state_t *cpu_state) {
       fprintf(fp, "0x%08lx : %08x\n", addr, word);
     }
   }
-
-  printf("Output written to %s\n", file_name);
 }
 
 /**
@@ -138,9 +127,24 @@ bool emulate_cycle(state_t *cpu_state) {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 2) {
-    print_usage();
+  FILE *output_fp;
+  if (argc == 2) {
+    output_fp = stdout;
   }
+  else if (argc == 3) {
+    char *file_name = argv[2];
+    output_fp = fopen(file_name, "w");
+
+    if (output_fp == NULL) {
+      fprintf(stderr, "Error writing to output file %s\n", file_name);
+      return EXIT_FAILURE;
+    }
+  }
+  else {
+    print_usage();
+    return EXIT_FAILURE;
+  }
+  
   state_t cpu_state;
   setup(&cpu_state);
   load_bin_to_memory(argv[1]);
@@ -150,7 +154,7 @@ int main(int argc, char **argv) {
     continue_running = emulate_cycle(&cpu_state);
   } while (continue_running);
 
-  output_result(&cpu_state);
+  output_result(&cpu_state, output_fp);
 
   return EXIT_SUCCESS;
 }
