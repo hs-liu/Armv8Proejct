@@ -4,6 +4,9 @@
 #define NOP_INSTRUCTION 0xD503201F
 #define HALT_INSTRUCTION 0x8A000000
 
+#define SF_32 0
+#define SF_64 1
+
 #define OP0_OFFSET 25
 #define OP0_SIZE 4
 
