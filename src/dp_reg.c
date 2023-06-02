@@ -5,31 +5,7 @@
 #include <stdio.h>
 
 #include "emulate.h"
-#include "arithmetic.h"
-
-#define MEMORY_CAPACITY (2 * 1024 * 1024)
-
-typedef struct {
-  bool N;
-  bool Z;
-  bool C;
-  bool V;
-} pstate_t;
-
-typedef union {
-  uint32_t W;
-  uint64_t X;
-} reg_t;
-
-typedef struct {
-  reg_t R[31];
-  reg_t ZR;
-  reg_t PC;
-  reg_t SP;
-  pstate_t PSTATE;
-} state_t;
-
-uint8_t main_memory[MEMORY_CAPACITY];
+#include "dp_reg.h"
 
 void set_NV_flags_64(state_t *state, uint64_t result) {
   state->PSTATE.N = (result >> 63) & 1;

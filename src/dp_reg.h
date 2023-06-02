@@ -57,3 +57,5 @@
 
 #define MADD_X 0
 #define MSUB_X 1
+
+//TODO: function prototypes
