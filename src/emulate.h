@@ -7,6 +7,8 @@
 #define SF_32 0
 #define SF_64 1
 
+#define ZR_REG 0x1f
+
 #define OP0_OFFSET 25
 #define OP0_SIZE 4
 
