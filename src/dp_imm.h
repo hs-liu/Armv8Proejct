@@ -37,7 +37,6 @@
 #define SUB_OPC 0x2
 #define SUBS_OPC 0x3
 
-#define ZR_REG 0x1f
 
 #define IMM_HW_OFFSET 21
 #define IMM_HW_SIZE 1

@@ -21,7 +21,9 @@ void add_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
 
 void adds_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   uint64_t result = state->R[src1].X + imm;
-  state->R[dest].X = result;
+  if (dest != ZR_REG) {
+    state->R[dest].X = result;
+  }
   set_NV_flags_64(state, result);
   state->PSTATE.C = (result < state->R[src1].X);
   state->PSTATE.V = (state->R[src1].X >> 63 == imm >> 63) && (result >> 63 != imm >> 63);
@@ -33,7 +35,9 @@ void sub_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
 
 void subs_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   uint64_t result = state->R[src1].X - imm;
-  state->R[dest].X = result;
+  if (dest != ZR_REG) {
+    state->R[dest].X = result;
+  }
   set_NV_flags_64(state, result);
   state->PSTATE.C = (result > state->R[src1].X);
   state->PSTATE.V = (state->R[src1].X >> 63 != imm >> 63) && (result >> 63 == imm >> 63);
@@ -53,7 +57,6 @@ void movk_64_imm(state_t *state, uint8_t dest, uint8_t hw, uint32_t imm) {
   state->R[dest].X = (state->R[dest].X & ~mask) | (imm << (hw * 16));
 }
 
-//TODO: handle zero reg
 void execute_imm_instruction_64(state_t *state, uint32_t instruction) {
   uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
   uint8_t opc = SELECT_BITS(instruction, IMM_OPC_OFFSET, IMM_OPC_SIZE);
@@ -72,7 +75,6 @@ void execute_imm_instruction_64(state_t *state, uint32_t instruction) {
     if (sh == 1) {
       imm12 = imm12 << 12;
     }
-    //TODO: ZR REG
     switch(opc) {
       case ADD_OPC:
         add_64_imm(state, rd, rn, imm12);
