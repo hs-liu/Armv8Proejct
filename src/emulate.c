@@ -121,7 +121,9 @@ bool emulate_cycle(state_t *cpu_state) {
   }
 
   if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
+    // TODO: implement branch instructions
     branch_instruction(cpu_state, instruction);
+    printf(": implement branch instructions\n");
   }
 
   return true;

@@ -1,32 +1,29 @@
-#define SF_32 0
-#define SF_64 1
-
 #define DPREG_OFFSET 25
 #define DPREG_SIZE 3
 
-#define SF_OFFSET 31
-#define SF_SIZE 1
+#define REG_SF_OFFSET 31
+#define REG_SF_SIZE 1
 
-#define OPC_OFFSET 29
-#define OPC_SIZE 2
+#define REG_OPC_OFFSET 29
+#define REG_OPC_SIZE 2
 
-#define M_OFFSET 28
-#define M_SIZE 1
+#define REG_M_OFFSET 28
+#define REG_M_SIZE 1
 
-#define OPR_OFFSET 21
-#define OPR_SIZE 4
+#define REG_OPR_OFFSET 21
+#define REG_OPR_SIZE 4
 
-#define RM_OFFSET 16
-#define RM_SIZE 5
+#define REG_RM_OFFSET 16
+#define REG_RM_SIZE 5
 
-#define OPERAND_OFFSET 10
-#define OPERAND_SIZE 6
+#define REG_OPERAND_OFFSET 10
+#define REG_OPERAND_SIZE 6
 
-#define RN_OFFSET 5
-#define RN_SIZE 5
+#define REG_RN_OFFSET 5
+#define REG_RN_SIZE 5
 
-#define RD_OFFSET 0
-#define RD_SIZE 5
+#define REG_RD_OFFSET 0
+#define REG_RD_SIZE 5
 
 #define ARITHMETIC_M 0
 #define ARITHMETIC_MASK 0x9
@@ -57,3 +54,10 @@
 
 #define MADD_X 0
 #define MSUB_X 1
+
+#define ADD_OPC 0x0
+#define ADDS_OPC 0x1
+#define SUB_OPC 0x2
+#define SUBS_OPC 0x3
+
+//TODO: function prototypes
