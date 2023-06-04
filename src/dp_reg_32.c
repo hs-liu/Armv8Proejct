@@ -7,11 +7,6 @@
 #include "emulate.h"
 #include "dp_reg.h"
 
-void set_NV_flags_32(state_t *state, uint32_t result) {
-  state->PSTATE.N = (result >> 31) & 1;
-  state->PSTATE.Z = (result == 0);
-}
-
 void and_32(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
   state->R[dest].W = state->R[src1].W & state->R[src2].W;  
 }
@@ -190,7 +185,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
           orn_32(state, rd, rn, rm);
           break;
         case EON_OPC:
-          eor(state, rd, rn, rm);
+          eor_32(state, rd, rn, rm);
           break;
         case ANDS_OPC:
           bics_32(state, rd, rn, rm);
@@ -207,41 +202,41 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
       uint8_t ra = SELECT_BITS(operand, 0, 5);
       assert(sf == SF_32);
       if (x == MADD_X) {
-          madd_32(&state, rd, ra, rn, rm);
+          madd_32(state, rd, ra, rn, rm);
       }
       if (x == MSUB_X) {
-          msub_32(&state, rd, ra, rn, rm);
+          msub_32(state, rd, ra, rn, rm);
       }
   }
   }
 }
 
-int main(int argc, char **argv) {
+// int main(int argc, char **argv) {
 
-    state_t DUM_STATE = {
-        .R = {
-            [0].X = 0xFFFF00000000FFFF,
-            [1].X = 0xFFFF00000000FFFF,
-            [2].X = 0xFFFF00000000FFFF,
-            [3].X = 0xFFFF00000000FFFF,
-            [4].X = 0x0FFFF0000000FFFF,
-            [5].X = 0xFFFF00000000FFFF,
-            [6].X = 0x00FF00000000FFFF,
-            [7].X = 0xFFFF00000000FFF0,
-        },
-        .ZR = {0},
-        .PC = {0},
-        .SP = {0},
-        .PSTATE = {0}
-    };
+//     state_t DUM_STATE = {
+//         .R = {
+//             [0].X = 0xFFFF00000000FFFF,
+//             [1].X = 0xFFFF00000000FFFF,
+//             [2].X = 0xFFFF00000000FFFF,
+//             [3].X = 0xFFFF00000000FFFF,
+//             [4].X = 0x0FFFF0000000FFFF,
+//             [5].X = 0xFFFF00000000FFFF,
+//             [6].X = 0x00FF00000000FFFF,
+//             [7].X = 0xFFFF00000000FFF0,
+//         },
+//         .ZR = {0},
+//         .PC = {0},
+//         .SP = {0},
+//         .PSTATE = {0}
+//     };
 
-    lsl_32(&DUM_STATE, 1, 4);
-    asr_32(&DUM_STATE, 5, 4);
-    ror_32(&DUM_STATE, 7, 8);
+//     lsl_32(&DUM_STATE, 1, 4);
+//     asr_32(&DUM_STATE, 5, 4);
+//     ror_32(&DUM_STATE, 7, 8);
 
-    for (int i = 0; i<8; i++) {
-        printf("register %d = %016lX\n", i, DUM_STATE.R[i].X);
-    }
+//     for (int i = 0; i<8; i++) {
+//         printf("register %d = %016lX\n", i, DUM_STATE.R[i].X);
+//     }
 
-  return EXIT_SUCCESS;
-}
+//   return EXIT_SUCCESS;
+// }

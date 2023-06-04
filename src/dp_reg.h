@@ -61,3 +61,5 @@
 #define SUBS_OPC 0x3
 
 //TODO: function prototypes
+void execute_dpreg_instruction_64(state_t *state, uint32_t instruction);
+void execute_dpreg_instruction_32(state_t *state, uint32_t instruction);

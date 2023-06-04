@@ -6,6 +6,8 @@
 
 #include "emulate.h"
 #include "branch.h"
+#include "dp_reg.h"
+#include "dp_imm.h"
 
 uint8_t main_memory[MEMORY_CAPACITY];
 
@@ -17,6 +19,17 @@ void setup(state_t *cpu_state) {
 
 void print_usage(void) {
   fprintf(stderr, "Usage: ./emulate <bin_file> [<out_file>]\n");
+}
+
+
+void set_NV_flags_32(state_t *state, uint32_t result) {
+  state->PSTATE.N = (result >> 31) & 1;
+  state->PSTATE.Z = (result == 0);
+}
+
+void set_NV_flags_64(state_t *state, uint64_t result) {
+  state->PSTATE.N = (result >> 63) & 1;
+  state->PSTATE.Z = (result == 0);
 }
 
 void load_bin_to_memory(char *file_name) {
@@ -89,13 +102,14 @@ bool emulate_cycle(state_t *cpu_state) {
   // Fetch
   uint32_t instruction = fetch_word(cpu_state->PC.X);
 
+  uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
   // Decode and execute
   uint8_t op0 = SELECT_BITS(instruction, OP0_OFFSET, OP0_SIZE);
 
-  cpu_state->PC.X += WORD_SIZE_BYTES; // TODO: Remove this
   printf("0x%08lx: %08x\n", cpu_state->PC.X, instruction);
 
   if (instruction == NOP_INSTRUCTION) {
+    cpu_state->PC.X += WORD_SIZE_BYTES;
     return true;
   }
 
@@ -105,24 +119,42 @@ bool emulate_cycle(state_t *cpu_state) {
 
   if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
     // TODO: implement data processing (immediate) instructions
-    printf(": implement data processing (immediate) instructions\n");
-
+    if (sf == SF_32) {
+      execute_dpimm_instruction_32(cpu_state, instruction);
+    } else if (sf == SF_64) {
+      execute_dpimm_instruction_64(cpu_state, instruction);
+    } else {
+      fprintf(stderr, "Illegal state: invalid sf value\n");
+      fprintf(stderr, "Exiting!\n");
+      exit(EXIT_FAILURE);
+    }
+    cpu_state->PC.X += WORD_SIZE_BYTES;
   }
 
   if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
     // TODO: implement data processing (register) instructions
-    printf(": implement data processing (register) instructions\n");
-
+    if (sf == SF_32) {
+      execute_dpreg_instruction_32(cpu_state, instruction);
+    } else if (sf == SF_64) {
+      execute_dpreg_instruction_64(cpu_state, instruction);
+    } else {
+      fprintf(stderr, "Illegal state: invalid sf value\n");
+      fprintf(stderr, "Exiting!\n");
+      exit(EXIT_FAILURE);
+    }
+    cpu_state->PC.X += WORD_SIZE_BYTES;
   }
 
   if (CHECK_BITS(op0, OP0_LS_MASK, OP0_LS_VALUE)) {
     // TODO: implement load and store instructions
     printf(": implement load and store instructions\n");
+    cpu_state->PC.X += WORD_SIZE_BYTES;
   }
 
   if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
     // TODO: implement branch instructions
-    branch_instruction(cpu_state, instruction);
+    // branch_instruction(cpu_state, instruction);
+    cpu_state->PC.X += WORD_SIZE_BYTES; // TODO
     printf(": implement branch instructions\n");
   }
 

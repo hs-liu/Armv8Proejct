@@ -47,3 +47,6 @@
 #define MOVN_OPC 0x0
 #define MOVZ_OPC 0x2
 #define MOVK_OPC 0x3
+
+void execute_dpimm_instruction_64(state_t *, uint32_t);
+void execute_dpimm_instruction_32(state_t *, uint32_t); 

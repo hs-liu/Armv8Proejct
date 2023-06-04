@@ -59,4 +59,7 @@ void conditional_branch(state_t *cpu_state, int64_t offset, uint8_t cond) {
   if (jump) {
       cpu_state->PC.X += offset;
   }
+  else {
+      cpu_state->PC.X += WORD_SIZE_BYTES;
+  }
 }

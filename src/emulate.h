@@ -47,3 +47,7 @@ typedef struct {
   reg_t SP;
   pstate_t PSTATE;
 } state_t;
+
+
+void set_NV_flags_32(state_t *, uint32_t);
+void set_NV_flags_64(state_t *, uint64_t);
