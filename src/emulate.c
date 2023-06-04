@@ -24,12 +24,12 @@ void print_usage(void) {
 
 void set_NV_flags_32(state_t *state, uint32_t result) {
   state->PSTATE.N = (result >> 31) & 1;
-  state->PSTATE.Z = (result == 0);
+  state->PSTATE.Z = (result != 0);
 }
 
 void set_NV_flags_64(state_t *state, uint64_t result) {
   state->PSTATE.N = (result >> 63) & 1;
-  state->PSTATE.Z = (result == 0);
+  state->PSTATE.Z = (result != 0);
 }
 
 void load_bin_to_memory(char *file_name) {

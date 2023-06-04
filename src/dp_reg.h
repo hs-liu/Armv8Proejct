@@ -31,7 +31,7 @@
 
 #define BIT_LOGIC_M 0
 #define BIT_LOGIC_MASK 0x8
-#define BIT_LOGIC_VALUE 0x8
+#define BIT_LOGIC_VALUE 0x0
 
 #define MULTIPLY_M 1
 #define MULTIPLY_MASK 0xF

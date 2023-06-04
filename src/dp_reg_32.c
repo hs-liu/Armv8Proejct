@@ -13,6 +13,7 @@ void and_32(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
 
 void bic_32(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
   state->R[dest].W = state->R[src1].W & ~state->R[src2].W;  
+  printf("bic_32 ran\n");
 }
 
 void orr_32(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
@@ -109,6 +110,7 @@ void subs_32_reg(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
 
 //TODO: NEED TO DEAL WITH 11111 encoding ZERO register
 void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
+  printf("executing dpreg instruction\n");
   assert(SELECT_BITS(instruction, DPREG_OFFSET, DPREG_SIZE) == 0x5);
   uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);
   uint8_t opc = SELECT_BITS(instruction, REG_OPC_OFFSET, REG_OPC_SIZE);
@@ -155,12 +157,29 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
 
   // Check if bit-logic
   if (m == BIT_LOGIC_M && CHECK_BITS(opr, BIT_LOGIC_MASK, BIT_LOGIC_VALUE)) {
+    printf("bit logic running\n");
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     uint8_t N = SELECT_BITS(opr, N_OFFSET, N_SIZE);
-    assert (shift == ROR_VALUE);
+    // assert (shift == ROR_VALUE);
     assert(operand < 32);
     assert(sf == SF_32);
-    ror_32(state, rm, operand);
+    // ror_32(state, rm, operand);
+
+    switch(shift) {
+      case LSL_VALUE:
+        lsl_32(state, rm, operand);
+        break;
+      case LSR_VALUE:
+        lsr_32(state, rm, operand);
+        break;
+      case ASR_VALUE:
+        asr_32(state, rm, operand);
+        break;
+      case ROR_VALUE:
+        ror_32(state, rm, operand);
+        break;
+    }
+
     if (N == 0) {
       switch(opc) {
         case AND_OPC:

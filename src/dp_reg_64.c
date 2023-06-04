@@ -160,9 +160,24 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
   if (m == BIT_LOGIC_M && CHECK_BITS(opr, BIT_LOGIC_MASK, BIT_LOGIC_VALUE)) {
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     uint8_t N = SELECT_BITS(opr, N_OFFSET, N_SIZE);
-    assert (shift == ROR_VALUE);
+    // assert (shift == ROR_VALUE);
     assert(operand < 32);
-    ror_64(state, rm, operand);
+    // ror_64(state, rm, operand);
+
+    switch(shift) {
+      case LSL_VALUE:
+        lsl_64(state, rm, operand);
+        break;
+      case LSR_VALUE:
+        lsr_64(state, rm, operand);
+        break;
+      case ASR_VALUE:
+        asr_64(state, rm, operand);
+        break;
+      case ROR_VALUE:
+        ror_64(state, rm, operand);
+        break;
+    }
     if (N == 0) {
       switch(opc) {
         case AND_OPC:
