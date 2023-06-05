@@ -8,8 +8,7 @@
 #include "branch.h"
 #include "dp_reg.h"
 #include "dp_imm.h"
-
-uint8_t main_memory[MEMORY_CAPACITY];
+#include "data_trans.h"
 
 void setup(state_t *cpu_state) {
   memset(cpu_state, 0, sizeof(state_t));
@@ -25,19 +24,11 @@ void print_usage(void) {
 void set_NV_flags_32(state_t *state, uint32_t result) {
   state->PSTATE.N = (result >> 31) & 1;
   state->PSTATE.Z = (result == 0);
-  if (result == 0) {
-    printf("Z set\n");
-  } else {
-    printf("Z unset\n");
-  }
 }
 
 void set_NV_flags_64(state_t *state, uint64_t result) {
   state->PSTATE.N = (result >> 63) & 1;
   state->PSTATE.Z = (result == 0);
-  if (result == 0) {
-    printf("Z set\n");
-  }
 }
 
 void load_bin_to_memory(char *file_name) {
@@ -82,6 +73,36 @@ uint32_t fetch_word(uint64_t address) {
   return *(uint32_t *)&main_memory[address];
 }
 
+void write_word(uint64_t address, uint32_t word) {
+  if (address >= MEMORY_CAPACITY) {
+    fprintf(stderr, "Illegal state: attempted to write beyond memory bounds\n");
+    fprintf(stderr, "Exiting!\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  *(uint32_t *)&main_memory[address] = word;
+}
+
+uint64_t fetch_word_64(uint64_t address) {
+  if (address >= MEMORY_CAPACITY) {
+    fprintf(stderr, "Illegal state: attempted to fetch beyond memory bounds\n");
+    fprintf(stderr, "Exiting!\n");
+    exit(EXIT_FAILURE);
+  }
+
+  return *(uint64_t *)&main_memory[address];
+}
+
+void write_word_64(uint64_t address, uint64_t word) {
+  if (address >= MEMORY_CAPACITY) {
+    fprintf(stderr, "Illegal state: attempted to write beyond memory bounds\n");
+    fprintf(stderr, "Exiting!\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  *(uint64_t *)&main_memory[address] = word;
+}
+
 void output_result(state_t *cpu_state, FILE *fp) {
   fprintf(fp, "Registers:\n");
   for (int i = 0; i < 31; i++) {
@@ -110,7 +131,6 @@ bool emulate_cycle(state_t *cpu_state) {
   // Fetch
   uint32_t instruction = fetch_word(cpu_state->PC.X);
 
-  uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
   // Decode and execute
   uint8_t op0 = SELECT_BITS(instruction, OP0_OFFSET, OP0_SIZE);
 
@@ -127,6 +147,7 @@ bool emulate_cycle(state_t *cpu_state) {
 
   if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
     // TODO: implement data processing (immediate) instructions
+    uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
     if (sf == SF_32) {
       execute_dpimm_instruction_32(cpu_state, instruction);
     } else if (sf == SF_64) {
@@ -140,14 +161,11 @@ bool emulate_cycle(state_t *cpu_state) {
   }
 
   if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
-    printf("Before dpreg\n");
     // TODO: implement data processing (register) instructions
+    uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
     if (sf == SF_32) {
-      printf("Before dpreg_32\n");
       execute_dpreg_instruction_32(cpu_state, instruction);
-      
     } else if (sf == SF_64) {
-      printf("Before dpreg_64\n");
       execute_dpreg_instruction_64(cpu_state, instruction);
     } else {
       fprintf(stderr, "Illegal state: invalid sf value\n");
@@ -160,16 +178,42 @@ bool emulate_cycle(state_t *cpu_state) {
   if (CHECK_BITS(op0, OP0_LS_MASK, OP0_LS_VALUE)) {
     // TODO: implement load and store instructions
     printf(": implement load and store instructions\n");
+    
+
+    uint8_t sf = SELECT_BITS(instruction, DT_SF_OFFSET, DT_SF_SIZE);
+
+    uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
+    if (CHECK_BITS(opcode, SDT_MASK, SDT_VALUE)) {
+      printf("Single Data Transfer\n");
+      if (sf == SF_32) {
+        execute_sdt_32(cpu_state, instruction);
+      }
+      else {
+        execute_sdt_64(cpu_state, instruction);
+      }
+    }
+    if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
+      printf("Load Literal\n");
+      if (sf == SF_32) {
+        execute_load_literal_32(cpu_state, instruction);
+      }
+      else {
+        execute_load_literal_64(cpu_state, instruction);
+      }
+      
+    }
     cpu_state->PC.X += WORD_SIZE_BYTES;
   }
 
   if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
     // TODO: implement branch instructions
-    // branch_instruction(cpu_state, instruction);
-    cpu_state->PC.X += WORD_SIZE_BYTES; // TODO
+    branch_instruction(cpu_state, instruction);
+    // output_result(cpu_state, stdout);
+    // exit(0); // TODO: REMOVE
     printf(": implement branch instructions\n");
   }
 
+  // output_result(cpu_state, stdout);
   return true;
 }
 

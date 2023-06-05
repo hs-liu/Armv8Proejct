@@ -48,6 +48,12 @@ typedef struct {
   pstate_t PSTATE;
 } state_t;
 
+uint8_t main_memory[MEMORY_CAPACITY];
 
 void set_NV_flags_32(state_t *, uint32_t);
 void set_NV_flags_64(state_t *, uint64_t);
+
+uint32_t fetch_word(uint64_t);
+void write_word(uint64_t, uint32_t);
+uint64_t fetch_word_64(uint64_t);
+void write_word_64(uint64_t, uint64_t);
