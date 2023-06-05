@@ -19,11 +19,18 @@
 #define REG_OPERAND_OFFSET 10
 #define REG_OPERAND_SIZE 6
 
+#define REG_X_OFFSET 15
+#define REG_X_SIZE 1
+
+#define REG_RA_OFFSET 10
+#define REG_RA_SIZE 5
+
 #define REG_RN_OFFSET 5
 #define REG_RN_SIZE 5
 
 #define REG_RD_OFFSET 0
 #define REG_RD_SIZE 5
+
 
 #define ARITHMETIC_M 0
 #define ARITHMETIC_MASK 0x9

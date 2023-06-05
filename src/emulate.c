@@ -24,12 +24,20 @@ void print_usage(void) {
 
 void set_NV_flags_32(state_t *state, uint32_t result) {
   state->PSTATE.N = (result >> 31) & 1;
-  state->PSTATE.Z = (result != 0);
+  state->PSTATE.Z = (result == 0);
+  if (result == 0) {
+    printf("Z set\n");
+  } else {
+    printf("Z unset\n");
+  }
 }
 
 void set_NV_flags_64(state_t *state, uint64_t result) {
   state->PSTATE.N = (result >> 63) & 1;
-  state->PSTATE.Z = (result != 0);
+  state->PSTATE.Z = (result == 0);
+  if (result == 0) {
+    printf("Z set\n");
+  }
 }
 
 void load_bin_to_memory(char *file_name) {
@@ -132,10 +140,14 @@ bool emulate_cycle(state_t *cpu_state) {
   }
 
   if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
+    printf("Before dpreg\n");
     // TODO: implement data processing (register) instructions
     if (sf == SF_32) {
+      printf("Before dpreg_32\n");
       execute_dpreg_instruction_32(cpu_state, instruction);
+      
     } else if (sf == SF_64) {
+      printf("Before dpreg_64\n");
       execute_dpreg_instruction_64(cpu_state, instruction);
     } else {
       fprintf(stderr, "Illegal state: invalid sf value\n");
