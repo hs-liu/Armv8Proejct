@@ -71,12 +71,20 @@ uint64_t asr_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
 }
 
 uint64_t ror_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    uint64_t mask = ((1 << (shift_amount + 1 )) -1);
-    uint64_t lower_bits = state->R[operand_reg].X & mask;
+    // uint64_t mask = ((1l << (shift_amount + 1 )) -1);
+    printf("state->R[operand_reg].X: %lx\n", state->R[operand_reg].X);
+    printf("shift_amount: %d\n", shift_amount);
+    uint64_t lower_bits = SELECT_BITS(state->R[operand_reg].X, 0, shift_amount);
+    printf("lower_bits: %llx\n", lower_bits);
+    uint64_t upper_bits = SELECT_BITS(state->R[operand_reg].X, shift_amount, 64-shift_amount);
+    printf("upper_bits: %lx\n", upper_bits);
     lower_bits <<= (64-shift_amount);
-    uint64_t result = state->R[operand_reg].X >> shift_amount;
-    result |= lower_bits;
-    return result;
+    // uint64_t result = state->R[operand_reg].X >> shift_amount;
+    upper_bits |= lower_bits;
+    return upper_bits;
+
+
+    
 }
 
 void add_64(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {

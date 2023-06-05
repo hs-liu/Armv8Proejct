@@ -91,31 +91,6 @@ uint32_t ror_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
     return result;
 }
 
-// void add_32_reg(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
-//   state->R[dest].W = state->R[src1].W + state->R[src2].W;
-// }
-
-// void adds_32_reg(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
-//   uint32_t result = state->R[src1].W + state->R[src2].W;
-//   state->R[dest].W = result;
-//   set_NV_flags_32(state, result);
-//   state->PSTATE.C = (result < state->R[src1].W);
-//   state->PSTATE.V = (state->R[src1].W >> 31 == state->R[src2].W >> 31) && (result >> 31 != state->R[src2].W >> 31);
-// }
-
-// void sub_32_reg(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
-//   state->R[dest].W = state->R[src1].W - state->R[src2].W;
-// }
-
-// void subs_32_reg(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
-//   uint32_t result = state->R[src1].W - state->R[src2].W;
-//   state->R[dest].W = result;
-//   set_NV_flags_32(state, result);
-//   state->PSTATE.C = (state->R[src1].W < state->R[src2].W);
-//   state->PSTATE.V = (state->R[src1].W >> 31 != state->R[src2].W >> 31) && (result >> 31 == state->R[src2].W >> 31);
-// }
-
-
 //TODO: NEED TO DEAL WITH 11111 encoding ZERO register
 void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
   printf("executing dpreg_32 instruction\n");

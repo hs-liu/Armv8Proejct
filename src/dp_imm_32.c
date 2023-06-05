@@ -7,18 +7,16 @@
 #include "emulate.h"
 #include "dp_imm.h"
 
-
-//TOOO: double check flags, especially V
-//TODO: if register is not regular register, but stack pointer
-
 void add_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   state->R[dest].W = state->R[src1].W + imm;
+  state->R[dest].X &= 0x00000000FFFFFFFF;
   printf("add_32_imm ran\n");
   printf("dest: %d\n", state->R[dest].W);
 }
 
 void adds_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   uint32_t result = state->R[src1].W + imm;
+  state->R[dest].X &= 0x00000000FFFFFFFF;
   if (dest != ZR_REG) {
     state->R[dest].W = result;
   }
@@ -34,6 +32,7 @@ void sub_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
 
 void subs_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   uint32_t result = state->R[src1].W - imm;
+  state->R[dest].X &= 0x00000000FFFFFFFF;
   if (dest != ZR_REG) {
     state->R[dest].W = result;
   }
