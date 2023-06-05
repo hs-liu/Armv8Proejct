@@ -134,8 +134,6 @@ bool emulate_cycle(state_t *cpu_state) {
   // Decode and execute
   uint8_t op0 = SELECT_BITS(instruction, OP0_OFFSET, OP0_SIZE);
 
-  printf("0x%08lx: %08x\n", cpu_state->PC.X, instruction);
-
   if (instruction == NOP_INSTRUCTION) {
     cpu_state->PC.X += WORD_SIZE_BYTES;
     return true;
@@ -146,7 +144,6 @@ bool emulate_cycle(state_t *cpu_state) {
   }
 
   if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
-    // TODO: implement data processing (immediate) instructions
     uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
     if (sf == SF_32) {
       execute_dpimm_instruction_32(cpu_state, instruction);
@@ -161,7 +158,6 @@ bool emulate_cycle(state_t *cpu_state) {
   }
 
   if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
-    // TODO: implement data processing (register) instructions
     uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
     if (sf == SF_32) {
       execute_dpreg_instruction_32(cpu_state, instruction);
@@ -176,15 +172,10 @@ bool emulate_cycle(state_t *cpu_state) {
   }
 
   if (CHECK_BITS(op0, OP0_LS_MASK, OP0_LS_VALUE)) {
-    // TODO: implement load and store instructions
-    printf(": implement load and store instructions\n");
-    
-
     uint8_t sf = SELECT_BITS(instruction, DT_SF_OFFSET, DT_SF_SIZE);
 
     uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
     if (CHECK_BITS(opcode, SDT_MASK, SDT_VALUE)) {
-      printf("Single Data Transfer\n");
       if (sf == SF_32) {
         execute_sdt_32(cpu_state, instruction);
       }
@@ -193,7 +184,6 @@ bool emulate_cycle(state_t *cpu_state) {
       }
     }
     if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
-      printf("Load Literal\n");
       if (sf == SF_32) {
         execute_load_literal_32(cpu_state, instruction);
       }
@@ -206,14 +196,9 @@ bool emulate_cycle(state_t *cpu_state) {
   }
 
   if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
-    // TODO: implement branch instructions
     branch_instruction(cpu_state, instruction);
-    // output_result(cpu_state, stdout);
-    // exit(0); // TODO: REMOVE
-    printf(": implement branch instructions\n");
   }
 
-  // output_result(cpu_state, stdout);
   return true;
 }
 
