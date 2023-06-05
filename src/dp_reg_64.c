@@ -192,7 +192,7 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
           orr_64(state, rd, rn, op2);
           break;
         case EON_OPC:
-          eon_64(state, rd, rn, op2);
+          eor_64(state, rd, rn, op2);
           break;
         case ANDS_OPC:
           ands_64(state, rd, rn, op2);
@@ -208,7 +208,7 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
           orn_64(state, rd, rn, op2);
           break;
         case EON_OPC:
-          eor_64(state, rd, rn, op2);
+          eon_64(state, rd, rn, op2);
           break;
         case ANDS_OPC:
           bics_64(state, rd, rn, op2);

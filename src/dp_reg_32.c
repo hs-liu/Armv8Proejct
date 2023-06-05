@@ -134,8 +134,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     assert(sf == SF_32);
     assert(operand < 32);
-    uint32_t op2 = state->R[rm].W;
-
+    uint32_t op2;
     switch (shift)
       {
         case LSL_VALUE:
@@ -174,7 +173,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
     assert(operand < 32);
     assert(sf == SF_32);
     // ror_32(state, rm, operand);
-    uint32_t op2 = state->R[rm].W;
+    uint32_t op2;
 
     switch(shift) {
       case LSL_VALUE:
@@ -200,7 +199,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
           orr_32(state, rd, rn, op2);
           break;
         case EON_OPC:
-          eon_32(state, rd, rn, op2);
+          eor_32(state, rd, rn, op2);
           break;
         case ANDS_OPC:
           ands_32(state, rd, rn, op2);
@@ -216,7 +215,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
           orn_32(state, rd, rn, op2);
           break;
         case EON_OPC:
-          eor_32(state, rd, rn, op2);
+          eon_32(state, rd, rn, op2);
           break;
         case ANDS_OPC:
           bics_32(state, rd, rn, op2);
