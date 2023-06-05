@@ -46,7 +46,7 @@ void sdt_postind_32(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, u
 
 void execute_load_literal_32(state_t *cpu_state, uint32_t instruction) {
   uint8_t rt = SELECT_BITS(instruction, DT_RT_OFFSET, DT_RT_SIZE);
-  uint64_t simm19 = SELECT_BITS(instruction, DT_SIMM19_OFFSET, DT_SIMM19_SIZE);
+  int64_t simm19 = SELECT_BITS(instruction, DT_SIMM19_OFFSET, DT_SIMM19_SIZE);
   simm19 = SIGN_EXT(simm19, 19, 64) * 4;
   cpu_state->R[rt].W = fetch_word(cpu_state->PC.X + simm19);
 }
