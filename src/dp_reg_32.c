@@ -64,14 +64,23 @@ void lsr_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
     state->R[operand_reg].X &= 0x00000000FFFFFFFF;
 }
 
-void asr_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
+uint32_t asr_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
+    // uint32_t sign_bit = state->R[operand_reg].W >> 31;
+    // state->R[operand_reg].X &= 0x00000000FFFFFFFF;
+    // state->R[operand_reg].W >>= shift_amount;
+    // uint32_t mask = ((sign_bit << (shift_amount+1))-1) << (32-shift_amount);
+    // if (sign_bit == 1) {
+    //     state->R[operand_reg].X |= mask;
+    // }
     uint32_t sign_bit = state->R[operand_reg].W >> 31;
-    state->R[operand_reg].X &= 0x00000000FFFFFFFF;
-    state->R[operand_reg].W >>= shift_amount;
     uint32_t mask = ((sign_bit << (shift_amount+1))-1) << (32-shift_amount);
+    uint32_t result = state->R[operand_reg].W >> shift_amount;
+    printf("ASR32 RAN\n");
     if (sign_bit == 1) {
-        state->R[operand_reg].X |= mask;
+        result |= mask;
     }
+    return result;
+
 }
 
 void ror_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
@@ -126,6 +135,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     assert(sf == SF_32);
     assert(operand < 32);
+    uint32_t op2;
     switch (shift)
       {
         case LSL_VALUE:
@@ -135,7 +145,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
           lsr_32(state, rm, operand);
           break;
         case ASR_VALUE:
-          asr_32(state, rm, operand);
+          op2 = asr_32(state, rm, operand);
           break;
       }
 
@@ -147,7 +157,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
         adds_32_reg(state, rd, rn, rm);
         break;
       case SUB_OPC:
-        sub_32_reg(state, rd, rn, rm);
+        sub_32_reg(state, rd, rn, op2);
         break;
       case SUBS_OPC:
         subs_32_reg(state, rd, rn, rm);
@@ -164,6 +174,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
     assert(operand < 32);
     assert(sf == SF_32);
     // ror_32(state, rm, operand);
+    uint32_t op2;
 
     switch(shift) {
       case LSL_VALUE:
@@ -173,7 +184,7 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
         lsr_32(state, rm, operand);
         break;
       case ASR_VALUE:
-        asr_32(state, rm, operand);
+        op2 = asr_32(state, rm, operand);
         break;
       case ROR_VALUE:
         ror_32(state, rm, operand);

@@ -12,11 +12,11 @@
 //TODO: if register is not regular register, but stack pointer
 
 
-void add_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
+void add_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
   state->R[dest].X = state->R[src1].X + imm;
 }
 
-void adds_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
+void adds_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
   uint64_t result = state->R[src1].X + imm;
   if (dest != ZR_REG) {
     state->R[dest].X = result;
@@ -26,11 +26,11 @@ void adds_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   state->PSTATE.V = (state->R[src1].X >> 63 == imm >> 63) && (result >> 63 != imm >> 63);
 }
 
-void sub_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
+void sub_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
   state->R[dest].X = state->R[src1].X - imm;
 }
 
-void subs_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
+void subs_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
   uint64_t result = state->R[src1].X - imm;
   if (dest != ZR_REG) {
     state->R[dest].X = result;

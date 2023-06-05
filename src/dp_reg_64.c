@@ -54,30 +54,32 @@ void msub_64(state_t *state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm) 
   state->R[dest].X = state->R[src].X - state->R[rn].X * state->R[rm].X;
 }
 
-void lsl_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    state->R[operand_reg].X <<= shift_amount;
+uint64_t lsl_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
+    return state->R[operand_reg].X << shift_amount;
 }
 
-void lsr_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    state->R[operand_reg].X >>=shift_amount;
+uint64_t lsr_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
+    return state->R[operand_reg].X >>shift_amount;
 }
 
-void asr_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    uint64_t sign_bit = state->R[operand_reg].X >> 63;
-    // printf("sign-bit = %llx", sign_bit);
-    state->R[operand_reg].X >>= shift_amount;
-    uint64_t mask = ((sign_bit << (shift_amount+1)) - 1) << (64-shift_amount);
+uint64_t asr_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
+    uint64_t sign_bit = state->R[operand_reg].W >> 31;
+    uint64_t mask = ((sign_bit << (shift_amount+1))-1) << (32-shift_amount);
+    uint64_t result = state->R[operand_reg].W >> shift_amount;
+    printf("ASR64 RAN\n");
     if (sign_bit == 1) {
-        state->R[operand_reg].X |= mask;
+        result |= mask;
     }
+    return result;
 }
 
-void ror_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
+uint64_t ror_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
     uint64_t mask = ((1 << (shift_amount + 1 )) -1);
     uint64_t lower_bits = state->R[operand_reg].X & mask;
     lower_bits <<= (64-shift_amount);
-    state->R[operand_reg].X >>= shift_amount;
-    state->R[operand_reg].X |= lower_bits;
+    uint64_t result = state->R[operand_reg].X >> shift_amount;
+    result |= lower_bits;
+    return result;
 }
 
 void add_64(state_t *state, uint8_t dest, uint8_t src1, uint8_t src2) {
@@ -127,30 +129,31 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     assert(sf == SF_64);
     assert(operand < 64);
+    uint64_t op2;
     switch (shift)
     {
       case LSL_VALUE:
-        lsl_64(state, rm, operand);
+        op2 = lsl_64(state, rm, operand);
         break;
       case LSR_VALUE:
-        lsr_64(state, rm, operand);
+        op2 = lsr_64(state, rm, operand);
         break;
       case ASR_VALUE:
-        asr_64(state, rm, operand);
+        op2 = asr_64(state, rm, operand);
         break;
     }
     switch(opc) {
         case ADD_OPC:
-          add_64(state, rd, rn, rm);
+          add_64(state, rd, rn, op2);
           break;
         case SUB_OPC:  
-          sub_64(state, rd, rn, rm);
+          sub_64(state, rd, rn, op2);
           break;
         case ADDS_OPC:
-          adds_64(state, rd, rn, rm);
+          adds_64(state, rd, rn, op2);
           break;
         case SUBS_OPC:
-          subs_64(state, rd, rn, rm);
+          subs_64(state, rd, rn, op2);
           break;
 
     }
@@ -163,6 +166,7 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
     // assert (shift == ROR_VALUE);
     assert(operand < 32);
     // ror_64(state, rm, operand);
+    uint64_t op2;
 
     switch(shift) {
       case LSL_VALUE:
@@ -172,7 +176,7 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
         lsr_64(state, rm, operand);
         break;
       case ASR_VALUE:
-        asr_64(state, rm, operand);
+        op2 = asr_64(state, rm, operand);
         break;
       case ROR_VALUE:
         ror_64(state, rm, operand);

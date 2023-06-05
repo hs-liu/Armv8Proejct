@@ -13,6 +13,8 @@
 
 void add_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   state->R[dest].W = state->R[src1].W + imm;
+  printf("add_32_imm ran\n");
+  printf("dest: %d\n", state->R[dest].W);
 }
 
 void adds_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
