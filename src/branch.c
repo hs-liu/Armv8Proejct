@@ -46,10 +46,10 @@ void conditional_branch(state_t *cpu_state, int64_t offset, uint8_t cond) {
       jump = cpu_state->PSTATE.Z == 0;
       break;
     case COND_GE:
-      jump = cpu_state->PSTATE.N == 1;
+      jump = cpu_state->PSTATE.N != 1;
       break;
     case COND_LT:
-      jump = cpu_state->PSTATE.N != 1;
+      jump = cpu_state->PSTATE.N == 1;
       break;
     case COND_GT:
       jump = cpu_state->PSTATE.Z == 0 && cpu_state->PSTATE.N == cpu_state->PSTATE.V;
