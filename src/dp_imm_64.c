@@ -89,8 +89,8 @@ void execute_dpimm_instruction_64(state_t *state, uint32_t instruction) {
       case SUBS_OPC:
         subs_64_imm(state, rd, rn, imm12);
         break;
+    }
   }
-}
 
   if (opi == IMM_WIDE_MOVE_OPI) {
     printf("instruction: %x\n", instruction);

@@ -24,8 +24,7 @@ void branch_instruction(state_t *cpu_state, uint32_t instruction) {
   }
   else if (CHECK_BITS(instruction, CON_BRANCH_MASK, CON_BRANCH_VALUE)) {
     simm19 = SELECT_BITS(instruction, BRANCH_SIMM19_OFFSET, BRANCH_SIMM19_SIZE);
-    simm19 = SIGN_EXT(simm19, 19, 64);
-    simm19 = simm19 * WORD_SIZE_BYTES;
+    simm19 = SIGN_EXT(simm19, 19, 64) * WORD_SIZE_BYTES;
     cond = SELECT_BITS(instruction, 0, 4);
     conditional_branch(cpu_state, simm19, cond);
   }

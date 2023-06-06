@@ -91,8 +91,8 @@ void execute_dpimm_instruction_32(state_t *state, uint32_t instruction) {
       case SUBS_OPC:
         subs_32_imm(state, rd, rn, imm12);
         break;
+    }
   }
-}
 
   if (opi == IMM_WIDE_MOVE_OPI) {
     uint8_t hw = SELECT_BITS(instruction, IMM_HW_OFFSET, IMM_HW_SIZE);
