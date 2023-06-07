@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -6,112 +5,78 @@
 #include "emulate.h"
 #include "data_trans.h"
 
-uint8_t *main_memory;
-
-uint64_t read_from_mem(uint64_t addr) {
-  uint64_t value = 0;
-  for (int i = 0; i < BYTES_IN_64; i++) {
-    value |= (uint64_t)main_memory[addr + i] << (i * 8);
+void sdt_uimm_64(state_t *cpu_state, uint64_t imm12, uint8_t xn, uint8_t rt, uint8_t l) {
+  if (l == LOAD_L) {
+    cpu_state->R[rt].X = fetch_word_64(cpu_state->R[xn].X + imm12);
   }
-  return value;
+  if (l == STORE_L) {
+    write_word_64(cpu_state->R[xn].X + imm12, cpu_state->R[rt].X);
+  }
 }
 
-void write_to_mem(uint64_t addr, uint64_t val) {
-  for (int i = 0; i < BYTES_IN_64; i++) {
-    main_memory[addr + i] = val >> (i * 8) & 0xFF;
+void sdt_regoffset_64(state_t *cpu_state, uint8_t xm, uint8_t xn, uint8_t rt, uint8_t l) {
+  if (l == LOAD_L) {
+    cpu_state->R[rt].X = fetch_word_64(cpu_state->R[xn].X + cpu_state->R[xm].X);
+  }
+  if (l == STORE_L) {
+    write_word_64(cpu_state->R[xn].X + cpu_state->R[xm].X, cpu_state->R[rt].X);
+  }
 }
 
-void ldr_litr_64(state_t *state, int64_t simm19, uint8_t rt) {
-  //check: adding uint54 and int64, possibly need casting
-  state->R[rt].X = read_from_mem(state->PC.X + SIGN_EXT(simm19 * 4, 19, 64));
+void sdt_preind_64(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l) {
+  cpu_state->R[xn].X = cpu_state->R[xn].X + simm9;
+  if (l == LOAD_L) {
+    cpu_state->R[rt].X = fetch_word_64(cpu_state->R[xn].X);
+  }
+  if (l == STORE_L) {
+    write_word_64(cpu_state->R[xn].X, cpu_state->R[rt].X);
+  }
 }
 
-void ldr_uimm_64(state_t *state, uint64_t imm12, uint8_t xn, uint8_t rt) {
-  state->R[rt].X = read_from_mem(state->R[xn].X + imm12);
-  //imm12 must be in range 0 to 2^14 (16380), and multiple of 4
+void sdt_postind_64(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l) {
+  if (l == LOAD_L) {
+    cpu_state->R[rt].X = fetch_word_64(cpu_state->R[xn].X);
+  }
+  if (l == STORE_L) {
+    // printf("write_word_64(%x, %x)\n", cpu_state->R[xn].X, cpu_state->R[rt].X);
+    write_word_64(cpu_state->R[xn].X, cpu_state->R[rt].X);
+  }
+  cpu_state->R[xn].X = cpu_state->R[xn].X + simm9;
 }
 
-void str_uimm_64(state_t *state, uint64_t imm12, uint8_t xn, uint8_t rt) {
-  write_to_mem(state->R[xn].X + imm12, state->R[rt].X);
+void execute_load_literal_64(state_t *cpu_state, uint32_t instruction) {
+  uint8_t rt = SELECT_BITS(instruction, DT_RT_OFFSET, DT_RT_SIZE);
+  int64_t simm19 = SELECT_BITS(instruction, DT_SIMM19_OFFSET, DT_SIMM19_SIZE);
+  simm19 = SIGN_EXT(simm19, 19, 64) * 4;
+  cpu_state->R[rt].X = fetch_word_64(cpu_state->PC.X + simm19);
 }
 
-void ldr_preind_64(state_t *state, int64_t simm9, uint8_t xn, uint8_t rt) {
-  //simm9 must be in range -256 to 255;
-  state->R[xn].X = (uint64_t) read_from_mem(state->R[xn].X + SIGNEXT(simm9, 9, 64));
-  state->R[rt].X = read_from_mem(state->R[xn].X);
-}
+void execute_sdt_64(state_t *cpu_state, uint32_t instruction) {
+  uint8_t rt = SELECT_BITS(instruction, DT_RT_OFFSET, DT_RT_SIZE);
+  uint8_t xn = SELECT_BITS(instruction, SDT_XN_OFFSET, SDT_XN_SIZE);
+  uint8_t l = SELECT_BITS(instruction, SDT_L_OFFSET, SDT_L_SIZE);
+  uint8_t u = SELECT_BITS(instruction, SDT_U_OFFSET, SDT_U_SIZE);
+  uint16_t offset = SELECT_BITS(instruction, SDT_OFFSET_OFFSET, SDT_OFFSET_SIZE);
 
-void str_preind_64(state_t *state, int64_t simm9, uint8_t xn, uint8_t rt) {
-  state->R[xn].X = (uint64_t) read_from_mem(state->R[xn].X + SIGNEXT(simm9, 9, 64));
-  write_to_mem((state->R[xn].X, state->R[rt].X);
-}
+  if (u == UNSIGNED_OFFSET_U) {
+    uint64_t imm12 = SELECT_BITS(instruction, SDT_IMM12_OFFSET, SDT_IMM12_SIZE);
+    imm12 *= 8;
+    sdt_uimm_64(cpu_state, imm12, xn, rt, l);
+  }
+  else if (CHECK_BITS(offset, REG_OFFSET_MASK, REG_OFFSET_VALUE)) {
+    uint8_t xm = SELECT_BITS(instruction, REG_OFFSET_XM_OFFSET, REG_OFFSET_XM_SIZE);
+    sdt_regoffset_64(cpu_state, xm, xn, rt, l);
+  }
+  else if (CHECK_BITS(offset, PRE_POST_MASK, PRE_POST_VALUE)) {
+    int64_t simm9 = SELECT_BITS(instruction, PRE_POST_SIMM9_OFFSET, PRE_POST_SIMM9_SIZE);
+    simm9 = SIGN_EXT(simm9, 9, 64);
+    uint8_t i = SELECT_BITS(instruction, PRE_POST_I_OFFSET, PRE_POST_I_SIZE);
 
-void ldr_postind_64(state_t *state, int64_t simm9, uint8_t xn, uint8_t rt) {
-  //simm9 must be in range -256 to 255;
-  state->R[rt].X = read_from_mem(state->R[xn].X);
-  state->R[xn].X = read_from_mem(state->R[xn].X + SIGNEXT(simm9, 9, 64));
-}
-
-void str_postind_64(state_t *state, int64_t simm9, uint8_t xn, uint8_t rt) {
-  write_to_mem(state->R[xn].X, state->R[rt].X);
-  state->R[xn].X = read_from_mem(state->R[xn].X + SIGNEXT(simm9, 9, 64));
-}
-
-void ldr_regOffset_64(state_t *state, uint8_t xm, uint8_t xn, uint8_t rt) {
-  state->R[rt].X = read_from_mem(state->R[xn].X + state->R[xm].X);
-}
-
-void str_regOffset_64(state_t *state, uint8_t xm, uint8_t xn, uint8_t rt) {
-  write_to_mem(state->R[xn].X + state->R[xm].X, state->R[rt].X);
-}
-
-void execute_load_64(state_t *state, uint32_t instruction, uint8_t *mem) {
-  main_memory = mem;
-  uint8_t sf = SELECT_BITS(instruction, SF_OFFSET, SF_SIZE);
-  //from spec: l defines ldr/str, u defines unsigned offset mode
-  uint8_t l = SELECT_BITS(instruction, L_OFFSET, L_SIZE);
-  uint8_t u = SELECT_BITS(instruction, U_OFFSET, U_SIZE);
-  uint8_t offset = SELECT_BITS(instruction, OFFSET_OFFSET, OFFSET_SIZE);
-  uint8_t rt = SELECT_BITS(instruction, RT_OFFSET, RT_SIZE);
-
-  assert(sf == SF_64);
-
-  if (SELECT_BITS(instruction, LDR_LITR_OFFSET, LDR_LITR_SIZE) == 0) {
-    uint64_t simm19 = SELECT_BITS(instruction, SIMM19_OFFSET, SIMM19_SIZE);
-    ldr_litr_64(state, simm19, rt);
-  } else {
-    uint8_t xn = SELECT_BITS(instruction, XN_OFFSET, XN_SIZE);
-    uint8_t xm = SELECT_BITS(instruction, XM_OFFSET, XM_SIZE);
-    uint8_t i = SELECT_BITS(instruction, I_OFFSET, I_SIZE);
-    if (l == L_IS_LDR) {
-      if (u == U_IS_UOFF) {
-        ldr_uimm_64(state, imm12, xn, rt);
-      } else {
-        if (SELECT_BITS(instruction, REG_OFF_OFFSET, REG_OFF_SIZE) == IS_REG_OFF) {
-          ldr_regOffset_64(state, xm, xn, rt);
-        } else {
-          if (i == I_IS_PRE) {
-            ldr_preind_64(state, simm9, xn, rt);
-          } else {
-            ldr_postind_64(state, simm9, xn, rt);
-          }
-        }
-      }
-    } else {
-      if (u == U_IS_UOFF) {
-        str_uimm_64(state, imm12, xn, rt);
-      } else {
-        if (SELECT_BITS(instruction, REG_OFF_OFFSET, REG_OFF_SIZE) == IS_REG_OFF) {
-          str_regOffset_64(state, xm, xn, rt);
-        } else {
-          if (i == I_IS_PRE) {
-            str_preind_64(state, simm9, xn, rt);
-          } else {
-            str_postind_64(state, simm9, xn, rt);
-          }
-        }
-      }
+    if (i == PRE_INDEX_I) {
+      sdt_preind_64(cpu_state, simm9, xn, rt, l);
+    }
+    else if (i == POST_INDEX_I) {
+      sdt_postind_64(cpu_state, simm9, xn, rt, l);
     }
   }
 }
-

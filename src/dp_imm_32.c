@@ -7,22 +7,19 @@
 #include "emulate.h"
 #include "dp_imm.h"
 
-
-//TOOO: double check flags, especially V
-//TODO: if register is not regular register, but stack pointer
-
-void set_NV_flags_32(state_t *state, uint32_t result) {
-  state->PSTATE.N = (result >> 31) & 1;
-  state->PSTATE.Z = (result == 0);
-}
-
 void add_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   state->R[dest].W = state->R[src1].W + imm;
+  state->R[dest].X &= 0x00000000FFFFFFFF;
+  printf("add_32_imm ran\n");
+  printf("dest: %d\n", state->R[dest].W);
 }
 
 void adds_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   uint32_t result = state->R[src1].W + imm;
-  state->R[dest].W = result;
+  state->R[dest].X &= 0x00000000FFFFFFFF;
+  if (dest != ZR_REG) {
+    state->R[dest].W = result;
+  }
   set_NV_flags_32(state, result);
   state->PSTATE.C = (result < state->R[src1].W);
   state->PSTATE.V = (state->R[src1].W >> 31 == imm >> 31) && (result >> 31 != imm >> 31);
@@ -30,32 +27,41 @@ void adds_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
 
 void sub_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   state->R[dest].W = state->R[src1].W - imm;
+  state->R[dest].X &= 0x00000000FFFFFFFF;
 }
 
 void subs_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
   uint32_t result = state->R[src1].W - imm;
-  state->R[dest].W = result;
+  state->R[dest].X &= 0x00000000FFFFFFFF;
+  if (dest != ZR_REG) {
+    state->R[dest].W = result;
+  }
   set_NV_flags_32(state, result);
-  state->PSTATE.C = (result > state->R[src1].W);
+  state->PSTATE.C = !(result > state->R[src1].W);
   state->PSTATE.V = (state->R[src1].W >> 31 != imm >> 31) && (result >> 31 == imm >> 31);
 }
 
 void movn_32_imm(state_t *state, uint8_t dest, uint32_t imm) {
   state->R[dest].W = ~imm;
+  state->R[dest].X &= 0x00000000FFFFFFFF;
+
 }
 
 void movz_32_imm(state_t *state, uint8_t dest, uint32_t imm) {
   state->R[dest].W = imm;
+  state->R[dest].X &= 0x00000000FFFFFFFF;
 }
 
 void movk_32_imm(state_t *state, uint8_t dest, uint8_t hw, uint32_t imm) {
+  printf("movk_32_imm running\n");
   uint32_t mask = 0xFFFF;
   mask = mask << (hw * 16);
   state->R[dest].W = (state->R[dest].W & ~mask) | (imm << (hw * 16));
+  state->R[dest].X &= 0x00000000FFFFFFFF;
 }
 
-//TODO: handle zero reg
-void execute_imm_instruction_32(state_t *state, uint32_t instruction) {
+void execute_dpimm_instruction_32(state_t *state, uint32_t instruction) {
+  printf("execute_dpimm_instruction_32 running\n");
   uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
   uint8_t opc = SELECT_BITS(instruction, IMM_OPC_OFFSET, IMM_OPC_SIZE);
   uint8_t opi = SELECT_BITS(instruction, IMM_OPI_OFFSET, IMM_OPI_SIZE);
@@ -72,7 +78,6 @@ void execute_imm_instruction_32(state_t *state, uint32_t instruction) {
     if (sh == 1) {
       imm12 = imm12 << 12;
     }
-    //TODO: ZR REG
     switch(opc) {
       case ADD_OPC:
         add_32_imm(state, rd, rn, imm12);
@@ -91,7 +96,7 @@ void execute_imm_instruction_32(state_t *state, uint32_t instruction) {
 
   if (opi == IMM_WIDE_MOVE_OPI) {
     uint8_t hw = SELECT_BITS(instruction, IMM_HW_OFFSET, IMM_HW_SIZE);
-    uint8_t imm16 = SELECT_BITS(instruction, IMM_IMM16_OFFSET, IMM_IMM16_SIZE);
+    uint64_t imm16 = SELECT_BITS(instruction, IMM_IMM16_OFFSET, IMM_IMM16_SIZE);
     
     uint64_t op = imm16 << (16 * hw);
 

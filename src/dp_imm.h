@@ -37,10 +37,9 @@
 #define SUB_OPC 0x2
 #define SUBS_OPC 0x3
 
-#define ZR_REG 0x1f
 
 #define IMM_HW_OFFSET 21
-#define IMM_HW_SIZE 1
+#define IMM_HW_SIZE 2
 
 #define IMM_IMM16_OFFSET 5
 #define IMM_IMM16_SIZE 16
@@ -48,3 +47,15 @@
 #define MOVN_OPC 0x0
 #define MOVZ_OPC 0x2
 #define MOVK_OPC 0x3
+
+void execute_dpimm_instruction_64(state_t *, uint32_t);
+void execute_dpimm_instruction_32(state_t *, uint32_t); 
+
+void add_32_imm(state_t *, uint8_t, uint8_t, uint32_t);
+void adds_32_imm(state_t *, uint8_t, uint8_t, uint32_t);
+void sub_32_imm(state_t *, uint8_t, uint8_t, uint32_t);
+void subs_32_imm(state_t *, uint8_t, uint8_t, uint32_t);
+void add_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
+void adds_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
+void sub_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
+void subs_64_imm(state_t *, uint8_t, uint8_t, uint64_t);

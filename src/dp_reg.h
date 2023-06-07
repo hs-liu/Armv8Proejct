@@ -19,11 +19,18 @@
 #define REG_OPERAND_OFFSET 10
 #define REG_OPERAND_SIZE 6
 
+#define REG_X_OFFSET 15
+#define REG_X_SIZE 1
+
+#define REG_RA_OFFSET 10
+#define REG_RA_SIZE 5
+
 #define REG_RN_OFFSET 5
 #define REG_RN_SIZE 5
 
 #define REG_RD_OFFSET 0
 #define REG_RD_SIZE 5
+
 
 #define ARITHMETIC_M 0
 #define ARITHMETIC_MASK 0x9
@@ -31,7 +38,7 @@
 
 #define BIT_LOGIC_M 0
 #define BIT_LOGIC_MASK 0x8
-#define BIT_LOGIC_VALUE 0x8
+#define BIT_LOGIC_VALUE 0x0
 
 #define MULTIPLY_M 1
 #define MULTIPLY_MASK 0xF
@@ -61,3 +68,5 @@
 #define SUBS_OPC 0x3
 
 //TODO: function prototypes
+void execute_dpreg_instruction_64(state_t *state, uint32_t instruction);
+void execute_dpreg_instruction_32(state_t *state, uint32_t instruction);

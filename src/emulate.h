@@ -7,6 +7,8 @@
 #define SF_32 0
 #define SF_64 1
 
+#define ZR_REG 0x1f
+
 #define OP0_OFFSET 25
 #define OP0_SIZE 4
 
@@ -22,7 +24,7 @@
 #define OP0_BRANCH_MASK 0xE
 #define OP0_BRANCH_VALUE 0xA
 
-#define SELECT_BITS(value, offset, size) ((value >> offset) & ((1 << size) - 1))
+#define SELECT_BITS(value, offset, size) ((value >> offset) & ((1ll << size) - 1))
 #define CHECK_BITS(value, mask, target_value) ((value & mask) == target_value) 
 #define SIGN_EXT(value, in_size, out_size) (value << (out_size - in_size) >> (out_size - in_size))
 
@@ -45,3 +47,13 @@ typedef struct {
   reg_t SP;
   pstate_t PSTATE;
 } state_t;
+
+uint8_t main_memory[MEMORY_CAPACITY];
+
+void set_NV_flags_32(state_t *, uint32_t);
+void set_NV_flags_64(state_t *, uint64_t);
+
+uint32_t fetch_word(uint64_t);
+void write_word(uint64_t, uint32_t);
+uint64_t fetch_word_64(uint64_t);
+void write_word_64(uint64_t, uint64_t);
