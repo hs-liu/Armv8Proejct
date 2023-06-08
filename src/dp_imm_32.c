@@ -10,8 +10,6 @@
 void add_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
     state->R[dest].W = state->R[src1].W + imm;
     state->R[dest].X &= 0x00000000FFFFFFFF;
-    printf("add_32_imm ran\n");
-    printf("dest: %d\n", state->R[dest].W);
 }
 
 void adds_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
@@ -53,7 +51,6 @@ void movz_32_imm(state_t *state, uint8_t dest, uint32_t imm) {
 }
 
 void movk_32_imm(state_t *state, uint8_t dest, uint8_t hw, uint32_t imm) {
-    printf("movk_32_imm running\n");
     uint32_t mask = 0xFFFF;
     mask = mask << (hw * 16);
     state->R[dest].W = (state->R[dest].W & ~mask) | (imm << (hw * 16));
@@ -61,7 +58,6 @@ void movk_32_imm(state_t *state, uint8_t dest, uint8_t hw, uint32_t imm) {
 }
 
 void execute_dpimm_instruction_32(state_t *state, uint32_t instruction) {
-    printf("execute_dpimm_instruction_32 running\n");
     uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
     uint8_t opc = SELECT_BITS(instruction, IMM_OPC_OFFSET, IMM_OPC_SIZE);
     uint8_t opi = SELECT_BITS(instruction, IMM_OPI_OFFSET, IMM_OPI_SIZE);

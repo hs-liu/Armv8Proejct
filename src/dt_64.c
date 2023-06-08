@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "emulate.h"
 #include "data_trans.h"
@@ -36,7 +37,6 @@ void sdt_postind_64(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, u
         cpu_state->R[rt].X = fetch_word_64(cpu_state->R[xn].X);
     }
     if (l == STORE_L) {
-        // printf("write_word_64(%x, %x)\n", cpu_state->R[xn].X, cpu_state->R[rt].X);
         write_word_64(cpu_state->R[xn].X, cpu_state->R[rt].X);
     }
     cpu_state->R[xn].X = cpu_state->R[xn].X + simm9;

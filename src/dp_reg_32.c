@@ -1,5 +1,7 @@
 #include <assert.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "emulate.h"
@@ -22,7 +24,6 @@ void orr_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
 }
 
 void orn_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-    printf("orn_32\n");
     state->R[dest].W = state->R[src1].W | ~op2;
     state->R[dest].X &= 0x00000000FFFFFFFF;
 }
@@ -61,7 +62,6 @@ void madd_32(state_t *state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm) 
 void msub_32(state_t *state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm) {
     state->R[dest].W = state->R[src].W - state->R[rn].W * state->R[rm].W;
     state->R[dest].X &= 0x00000000FFFFFFFF;
-    printf("MSUB RAN\n");
 }
 
 uint32_t lsl_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
@@ -91,7 +91,6 @@ uint32_t ror_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
 
 //TODO: NEED TO DEAL WITH 11111 encoding ZERO register
 void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
-    printf("executing dpreg_32 instruction\n");
     assert(SELECT_BITS(instruction, DPREG_OFFSET, DPREG_SIZE) == 0x5);
     uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);
     uint8_t opc = SELECT_BITS(instruction, REG_OPC_OFFSET, REG_OPC_SIZE);
@@ -138,7 +137,6 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
 
     // Check if bit-logic
     if (m == BIT_LOGIC_M && CHECK_BITS(opr, BIT_LOGIC_MASK, BIT_LOGIC_VALUE)) {
-        printf("bit logic running\n");
         uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
         uint8_t N = SELECT_BITS(opr, N_OFFSET, N_SIZE);
         // assert (shift == ROR_VALUE);
@@ -199,7 +197,6 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
     }
     // Check if Multiply
     if (m == MULTIPLY_M && CHECK_BITS(opr, MULTIPLY_MASK, MULTIPLY_VALUE)) {
-        printf("Multiply_32 ran\n");
         uint8_t x = SELECT_BITS(instruction, REG_X_OFFSET, REG_X_SIZE);
         uint8_t ra = SELECT_BITS(instruction, REG_RA_OFFSET, REG_RA_SIZE);
         assert(sf == SF_32);
