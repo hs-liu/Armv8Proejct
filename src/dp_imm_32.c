@@ -65,7 +65,6 @@ void execute_dpimm_instruction_32(state_t *state, uint32_t instruction) {
   uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
   uint8_t opc = SELECT_BITS(instruction, IMM_OPC_OFFSET, IMM_OPC_SIZE);
   uint8_t opi = SELECT_BITS(instruction, IMM_OPI_OFFSET, IMM_OPI_SIZE);
-  // uint8_t operand = SELECT_BITS(instruction, IMM_OPERAND_OFFSET, IMM_OPERAND_SIZE);
   uint8_t rd = SELECT_BITS(instruction, IMM_RD_OFFSET, IMM_RD_SIZE);
 
   assert(SELECT_BITS(instruction, IMM_OFFSET, IMM_SIZE) == IMM_VALUE);

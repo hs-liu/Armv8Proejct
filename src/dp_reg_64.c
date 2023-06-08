@@ -120,8 +120,6 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
   uint8_t rn = SELECT_BITS(instruction, REG_RN_OFFSET, REG_RN_SIZE);
   uint8_t rd = SELECT_BITS(instruction, REG_RD_OFFSET, REG_RD_SIZE);
   
-  // printf("m = %d, opr = %d\n", m, opr);
-  // Check if arithmetic
   if (m == ARITHMETIC_M && CHECK_BITS(opr, ARITHMETIC_MASK, ARITHMETIC_VALUE)) {
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     assert(sf == SF_64);

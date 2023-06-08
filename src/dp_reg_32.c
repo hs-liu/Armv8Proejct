@@ -63,7 +63,6 @@ void madd_32(state_t *state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm) 
 void msub_32(state_t *state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm) {
   state->R[dest].W = state->R[src].W - state->R[rn].W * state->R[rm].W;
   state->R[dest].X &= 0x00000000FFFFFFFF;
-  printf("MSUB RAN\n");
 }
 
 uint32_t lsl_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
@@ -91,9 +90,7 @@ uint32_t ror_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
     return result;
 }
 
-//TODO: NEED TO DEAL WITH 11111 encoding ZERO register
 void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
-  printf("executing dpreg_32 instruction\n");
   assert(SELECT_BITS(instruction, DPREG_OFFSET, DPREG_SIZE) == 0x5);
   uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);
   uint8_t opc = SELECT_BITS(instruction, REG_OPC_OFFSET, REG_OPC_SIZE);
@@ -147,7 +144,6 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
     // assert (shift == ROR_VALUE);
     assert(operand < 32);
     assert(sf == SF_32);
-    // ror_32(state, rm, operand);
     uint32_t op2;
 
     switch(shift) {
@@ -215,33 +211,3 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
       }
   }
 }
-
-// int main(int argc, char **argv) {
-
-//     state_t DUM_STATE = {
-//         .R = {
-//             [0].X = 0xFFFF00000000FFFF,
-//             [1].X = 0xFFFF00000000FFFF,
-//             [2].X = 0xFFFF00000000FFFF,
-//             [3].X = 0xFFFF00000000FFFF,
-//             [4].X = 0x0FFFF0000000FFFF,
-//             [5].X = 0xFFFF00000000FFFF,
-//             [6].X = 0x00FF00000000FFFF,
-//             [7].X = 0xFFFF00000000FFF0,
-//         },
-//         .ZR = {0},
-//         .PC = {0},
-//         .SP = {0},
-//         .PSTATE = {0}
-//     };
-
-//     lsl_32(&DUM_STATE, 1, 4);
-//     asr_32(&DUM_STATE, 5, 4);
-//     ror_32(&DUM_STATE, 7, 8);
-
-//     for (int i = 0; i<8; i++) {
-//         printf("register %d = %016lX\n", i, DUM_STATE.R[i].X);
-//     }
-
-//   return EXIT_SUCCESS;
-// }
