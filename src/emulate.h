@@ -42,7 +42,6 @@ typedef union {
 
 typedef struct {
   reg_t R[31];
-  reg_t ZR;
   reg_t PC;
   reg_t SP;
   pstate_t PSTATE;

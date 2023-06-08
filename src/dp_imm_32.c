@@ -35,7 +35,7 @@ void subs_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
         state->R[dest].W = result;
     }
     set_NV_flags_32(state, result);
-    state->PSTATE.C = !(result > state->R[src1].W);
+    // state->PSTATE.C = (result > state->R[src1].W);
     state->PSTATE.V = (state->R[src1].W >> 31 != imm >> 31) && (result >> 31 == imm >> 31);
 }
 
@@ -61,7 +61,6 @@ void execute_dpimm_instruction_32(state_t *state, uint32_t instruction) {
     uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
     uint8_t opc = SELECT_BITS(instruction, IMM_OPC_OFFSET, IMM_OPC_SIZE);
     uint8_t opi = SELECT_BITS(instruction, IMM_OPI_OFFSET, IMM_OPI_SIZE);
-    // uint8_t operand = SELECT_BITS(instruction, IMM_OPERAND_OFFSET, IMM_OPERAND_SIZE);
     uint8_t rd = SELECT_BITS(instruction, IMM_RD_OFFSET, IMM_RD_SIZE);
 
     assert(SELECT_BITS(instruction, IMM_OFFSET, IMM_SIZE) == IMM_VALUE);
