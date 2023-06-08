@@ -24,7 +24,6 @@ void orr_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
 }
 
 void orn_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-  printf("orn_32\n");
   state->R[dest].W = state->R[src1].W | ~op2;
   state->R[dest].X &= 0x00000000FFFFFFFF;
 }
@@ -138,10 +137,8 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
 
   // Check if bit-logic
   if (m == BIT_LOGIC_M && CHECK_BITS(opr, BIT_LOGIC_MASK, BIT_LOGIC_VALUE)) {
-    printf("bit logic running\n");
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     uint8_t N = SELECT_BITS(opr, N_OFFSET, N_SIZE);
-    // assert (shift == ROR_VALUE);
     assert(operand < 32);
     assert(sf == SF_32);
     uint32_t op2;
@@ -199,7 +196,6 @@ void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {
   }
   // Check if Multiply
   if (m == MULTIPLY_M && CHECK_BITS(opr, MULTIPLY_MASK, MULTIPLY_VALUE)) {
-    printf("Multiply_32 ran\n");
       uint8_t x = SELECT_BITS(instruction, REG_X_OFFSET, REG_X_SIZE);
       uint8_t ra = SELECT_BITS(instruction, REG_RA_OFFSET, REG_RA_SIZE);
       assert(sf == SF_32);
