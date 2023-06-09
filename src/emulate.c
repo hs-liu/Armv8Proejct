@@ -23,16 +23,14 @@ void print_usage(void) {
     fprintf(stderr, "Usage: ./emulate <bin_file> [<out_file>]\n");
 }
 
-void set_NV_flags(state_t *state, uint64_t result, uint8_t sf) {
+void set_NV_flags(state_t *cpu_state, uint64_t result, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
+    int msb_index = sf == SF_32 ? 31 : 63;
     if (sf == SF_32) {
-        state->PSTATE.N = SELECT_BITS(result, 31, 1);
-        state->PSTATE.Z = SELECT_BITS(result, 0, 32) == 0;
+        result = SELECT_BITS(result, 0, 32);
     }
-    else {
-        state->PSTATE.N = result >> 63;
-        state->PSTATE.Z = result == 0;
-    }
+    cpu_state->PSTATE.N = SELECT_BITS(result, msb_index, 1);
+    cpu_state->PSTATE.Z = result == 0;
 }
 
 void load_bin_to_memory(char *file_name) {
@@ -118,7 +116,7 @@ void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uin
     }
     if (sf == SF_32) {
         cpu_state->R[reg_num].W = (uint32_t)value;
-        cpu_state->R[reg_num].X &= 0x00000000FFFFFFFF;
+        cpu_state->R[reg_num].X = SELECT_BITS(cpu_state->R[reg_num].X, 0, 32);
     }
     else {
         cpu_state->R[reg_num].X = value;
