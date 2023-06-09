@@ -7,37 +7,9 @@
 #include "emulate.h"
 #include "dp_imm.h"
 
-void add_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
-    uint32_t result = get_register_value_32(state, src1) + imm;
-    set_register_value_32(state, dest, result);
-}
-
-void add_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
-    uint64_t result = get_register_value_64(state, src1) + imm;
-    set_register_value_64(state, dest, result);
-}
-
 void add_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
     uint64_t result = get_register_value(state, src1, sf) + imm;
     set_register_value(state, dest, result, sf);
-}
-
-void adds_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
-    uint32_t reg_value = get_register_value_32(state, src1); 
-    uint32_t result = reg_value + imm;
-    set_register_value_32(state, dest, result);
-    set_NV_flags_32(state, result);
-    state->PSTATE.C = (result < reg_value);
-    state->PSTATE.V = (reg_value >> 31 == imm >> 31) && (result >> 31 != imm >> 31);
-}
-
-void adds_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
-    uint64_t reg_value = get_register_value_64(state, src1);
-    uint64_t result = reg_value + imm;
-    set_register_value_64(state, dest, result);
-    set_NV_flags_64(state, result);
-    state->PSTATE.C = (result < reg_value);
-    state->PSTATE.V = (reg_value >> 63 == imm >> 63) && (result >> 63 != imm >> 63);
 }
 
 void adds_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
@@ -52,38 +24,9 @@ void adds_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t 
     state->PSTATE.V = state->PSTATE.V && (SELECT_BITS(result, lsb_index, 1) != SELECT_BITS(imm, lsb_index, 1));
 }
 
-
-void sub_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
-    uint32_t result = get_register_value_32(state, src1) - imm;
-    set_register_value_32(state, dest, result);
-}
-
-void sub_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
-    uint64_t result = get_register_value_64(state, src1) - imm;
-    set_register_value_64(state, dest, result);
-}
-
 void sub_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
     uint64_t result = get_register_value(state, src1, sf) - imm;
     set_register_value(state, dest, result, sf);
-}
-
-void subs_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
-    uint32_t reg_value = get_register_value_32(state, src1);
-    uint32_t result = reg_value - imm;
-    set_register_value_32(state, dest, result);
-    set_NV_flags_32(state, result);
-    state->PSTATE.C = !(result > reg_value);
-    state->PSTATE.V = (reg_value >> 31 != imm >> 31) && (result >> 31 == imm >> 31);
-}
-
-void subs_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
-    uint64_t result = get_register_value_64(state, src1) - imm;
-    set_register_value_64(state, dest, result);
-    set_NV_flags_64(state, result);
-    state->PSTATE.C = !(result > state->R[src1].X);
-    state->PSTATE.V = (state->R[src1].X >> 63 != imm >> 63) && (result >> 63 == imm >> 63);
-
 }
 
 void subs_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
@@ -99,44 +42,12 @@ void subs_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t 
 
 }
 
-void movn_32_imm(state_t *state, uint8_t dest, uint32_t imm) {
-    set_register_value_32(state, dest, ~imm);
-}
-
-void movn_64_imm(state_t *state, uint8_t dest, uint64_t imm) {
-    set_register_value_64(state, dest, ~imm);
-}
-
 void movn_imm(state_t *state, uint8_t dest, uint64_t imm, uint8_t sf) {
     set_register_value(state, dest, ~imm, sf);
 }
 
-void movz_32_imm(state_t *state, uint8_t dest, uint32_t imm) {
-    set_register_value_32(state, dest, imm);
-}
-
-void movz_64_imm(state_t *state, uint8_t dest, uint64_t imm) {
-    set_register_value_64(state, dest, imm);
-}
-
 void movz_imm(state_t *state, uint8_t dest, uint64_t imm, uint8_t sf) {
     set_register_value(state, dest, imm, sf);
-}
-
-void movk_32_imm(state_t *state, uint8_t dest, uint8_t hw, uint32_t imm) {
-    uint32_t mask = 0xFFFF;
-    mask = mask << (hw * 16);
-    uint32_t reg_value = get_register_value_32(state, dest);
-    uint32_t result = (reg_value & ~mask) | (imm << (hw * 16));
-    set_register_value_32(state, dest, result);
-}
-
-void movk_64_imm(state_t *state, uint8_t dest, uint8_t hw, uint64_t imm) {
-    uint64_t mask = 0xFFFF;
-    mask = mask << (hw * 16);
-    uint64_t reg_value = get_register_value_64(state, dest);
-    uint64_t result = (reg_value & ~mask) | (imm << (hw * 16));
-    set_register_value_64(state, dest, result);
 }
 
 void movk_imm(state_t *state, uint8_t dest, uint8_t hw, uint64_t imm, uint8_t sf) {

@@ -84,11 +84,5 @@
 #define IS_REG_OFF 1
 #define I_IS_PRE 1
 
-void execute_load_literal_32(state_t *state, uint32_t instruction);
-void execute_load_literal_64(state_t *state, uint32_t instruction);
 void execute_load_literal(state_t *, uint32_t, uint8_t);
-
-void execute_load_store_32(state_t *cpu_state, uint32_t instruction);
-void execute_load_store_64(state_t *cpu_state, uint32_t instruction);
-
 void execute_sdt(state_t *, uint32_t, uint8_t);
