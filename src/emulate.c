@@ -202,6 +202,36 @@ bool emulate_cycle(state_t *cpu_state) {
     return true;
 }
 
+uint32_t get_register_value_32(state_t *cpu_state, uint8_t reg_num) {
+    if (reg_num == ZR_REG) {
+        return 0;
+    }
+    return cpu_state->R[reg_num].W;
+}
+
+void set_register_value_32(state_t *cpu_state, uint8_t reg_num, uint32_t value) {
+    if (reg_num == ZR_REG) {
+        return;
+    }
+    cpu_state->R[reg_num].W = value;
+    cpu_state->R[reg_num].X &= 0x00000000FFFFFFFF;
+}
+
+uint64_t get_register_value_64(state_t *cpu_state, uint8_t reg_num) {
+    if (reg_num == ZR_REG) {
+        return 0;
+    }
+    return cpu_state->R[reg_num].X;
+}
+
+void set_register_value_64(state_t *cpu_state, uint8_t reg_num, uint64_t value) {
+    if (reg_num == ZR_REG) {
+        return;
+    }
+    cpu_state->R[reg_num].X = value;
+}
+
+
 int main(int argc, char **argv) {
     FILE *output_fp;
     if (argc == 2) {

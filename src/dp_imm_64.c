@@ -8,45 +8,46 @@
 #include "dp_imm.h"
 
 void add_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
-    state->R[dest].X = state->R[src1].X + imm;
+    uint64_t result = get_register_value_64(state, src1) + imm;
+    set_register_value_64(state, dest, result);
 }
 
 void adds_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
-    uint64_t result = state->R[src1].X + imm;
-    if (dest != ZR_REG) {
-        state->R[dest].X = result;
-    }
+    uint64_t reg_value = get_register_value_64(state, src1);
+    uint64_t result = reg_value + imm;
+    set_register_value_64(state, dest, result);
     set_NV_flags_64(state, result);
-    state->PSTATE.C = (result < state->R[src1].X);
-    state->PSTATE.V = (state->R[src1].X >> 63 == imm >> 63) && (result >> 63 != imm >> 63);
+    state->PSTATE.C = (result < reg_value);
+    state->PSTATE.V = (reg_value >> 63 == imm >> 63) && (result >> 63 != imm >> 63);
 }
 
 void sub_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
-    state->R[dest].X = state->R[src1].X - imm;
+    uint64_t result = get_register_value_64(state, src1) - imm;
+    set_register_value_64(state, dest, result);
 }
 
 void subs_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
-    uint64_t result = state->R[src1].X - imm;
-    if (dest != ZR_REG) {
-        state->R[dest].X = result;
-    }
+    uint64_t result = get_register_value_64(state, src1) - imm;
+    set_register_value_64(state, dest, result);
     set_NV_flags_64(state, result);
-    // state->PSTATE.C = (result > state->R[src1].X);
+    state->PSTATE.C = !(result > state->R[src1].X);
     state->PSTATE.V = (state->R[src1].X >> 63 != imm >> 63) && (result >> 63 == imm >> 63);
 }
 
 void movn_64_imm(state_t *state, uint8_t dest, uint64_t imm) {
-    state->R[dest].X = ~imm;
+    set_register_value_64(state, dest, ~imm);
 }
 
 void movz_64_imm(state_t *state, uint8_t dest, uint64_t imm) {
-    state->R[dest].X = imm;
+    set_register_value_64(state, dest, imm);
 }
 
 void movk_64_imm(state_t *state, uint8_t dest, uint8_t hw, uint64_t imm) {
     uint64_t mask = 0xFFFF;
     mask = mask << (hw * 16);
-    state->R[dest].X = (state->R[dest].X & ~mask) | (imm << (hw * 16));
+    uint64_t reg_value = get_register_value_64(state, dest);
+    uint64_t result = (reg_value & ~mask) | (imm << (hw * 16));
+    set_register_value_64(state, dest, result);
 }
 
 void execute_dpimm_instruction_64(state_t *state, uint32_t instruction) {
@@ -56,7 +57,6 @@ void execute_dpimm_instruction_64(state_t *state, uint32_t instruction) {
     uint8_t rd = SELECT_BITS(instruction, IMM_RD_OFFSET, IMM_RD_SIZE);
 
     assert(SELECT_BITS(instruction, IMM_OFFSET, IMM_SIZE) == IMM_VALUE);
-
     assert(sf == SF_64);
 
     if (opi == IMM_ARITHMETIC_OPI) {

@@ -8,53 +8,47 @@
 #include "dp_imm.h"
 
 void add_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
-    state->R[dest].W = state->R[src1].W + imm;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src1) + imm;
+    set_register_value_32(state, dest, result);
 }
 
 void adds_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
-    uint32_t result = state->R[src1].W + imm;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
-    if (dest != ZR_REG) {
-        state->R[dest].W = result;
-    }
+    uint32_t reg_value = get_register_value_32(state, src1); 
+    uint32_t result = reg_value + imm;
+    set_register_value_32(state, dest, result);
     set_NV_flags_32(state, result);
-    state->PSTATE.C = (result < state->R[src1].W);
-    state->PSTATE.V = (state->R[src1].W >> 31 == imm >> 31) && (result >> 31 != imm >> 31);
+    state->PSTATE.C = (result < reg_value);
+    state->PSTATE.V = (reg_value >> 31 == imm >> 31) && (result >> 31 != imm >> 31);
 }
 
 void sub_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
-    state->R[dest].W = state->R[src1].W - imm;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src1) - imm;
+    set_register_value_32(state, dest, result);
 }
 
 void subs_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
-    uint32_t result = state->R[src1].W - imm;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
-    if (dest != ZR_REG) {
-        state->R[dest].W = result;
-    }
+    uint32_t reg_value = get_register_value_32(state, src1);
+    uint32_t result = reg_value - imm;
+    set_register_value_32(state, dest, result);
     set_NV_flags_32(state, result);
-    // state->PSTATE.C = (result > state->R[src1].W);
-    state->PSTATE.V = (state->R[src1].W >> 31 != imm >> 31) && (result >> 31 == imm >> 31);
+    state->PSTATE.C = !(result > reg_value);
+    state->PSTATE.V = (reg_value >> 31 != imm >> 31) && (result >> 31 == imm >> 31);
 }
 
 void movn_32_imm(state_t *state, uint8_t dest, uint32_t imm) {
-    state->R[dest].W = ~imm;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
-
+    set_register_value_32(state, dest, ~imm);
 }
 
 void movz_32_imm(state_t *state, uint8_t dest, uint32_t imm) {
-    state->R[dest].W = imm;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    set_register_value_32(state, dest, imm);
 }
 
 void movk_32_imm(state_t *state, uint8_t dest, uint8_t hw, uint32_t imm) {
     uint32_t mask = 0xFFFF;
     mask = mask << (hw * 16);
-    state->R[dest].W = (state->R[dest].W & ~mask) | (imm << (hw * 16));
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t reg_value = get_register_value_32(state, dest);
+    uint32_t result = (reg_value & ~mask) | (imm << (hw * 16));
+    set_register_value_32(state, dest, result);
 }
 
 void execute_dpimm_instruction_32(state_t *state, uint32_t instruction) {
