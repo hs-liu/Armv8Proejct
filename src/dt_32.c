@@ -9,51 +9,60 @@
 
 void sdt_uimm_32(state_t *cpu_state, uint64_t imm12, uint8_t xn, uint8_t rt, uint8_t l) {
   assert(l == LOAD_L || l == STORE_L);
+  uint64_t xn_value = get_register_value_64(cpu_state, xn);
+  uint32_t rt_value = get_register_value_32(cpu_state, rt);
   if (l == LOAD_L) {
-    cpu_state->R[rt].W = fetch_word(cpu_state->R[xn].X + imm12);
+    set_register_value_32(cpu_state, rt, fetch_word(xn_value + imm12));
   }
   else if (l == STORE_L) {
-    write_word(cpu_state->R[xn].X + imm12, cpu_state->R[rt].X);
+    write_word(xn_value + imm12, rt_value);
   }
 }
 
 void sdt_regoffset_32(state_t *cpu_state, uint8_t xm, uint8_t xn, uint8_t rt, uint8_t l) {
   assert(l == LOAD_L || l == STORE_L);
+  uint64_t xn_value = get_register_value_64(cpu_state, xn);
+  uint64_t xm_value = get_register_value_64(cpu_state, xm);
+  uint32_t rt_value = get_register_value_32(cpu_state, rt);
   if (l == LOAD_L) {
-    cpu_state->R[rt].W = fetch_word(cpu_state->R[xn].X + cpu_state->R[xm].X);
+    set_register_value_32(cpu_state, rt, fetch_word(xn_value + xm_value));
   }
   else if (l == STORE_L) {
-    write_word(cpu_state->R[xn].X + cpu_state->R[xm].X, cpu_state->R[rt].X);
+    write_word(xn_value + xm_value, rt_value);
   }
 }
 
 void sdt_preind_32(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l) {
   assert(l == LOAD_L || l == STORE_L);
-  cpu_state->R[xn].X = cpu_state->R[xn].X + simm9;
+  uint64_t xn_value = get_register_value_64(cpu_state, xn) + simm9;
+  uint32_t rt_value = get_register_value_32(cpu_state, rt);
+  set_register_value_64(cpu_state, xn, xn_value);
   if (l == LOAD_L) {
-    cpu_state->R[rt].W = fetch_word(cpu_state->R[xn].X);
+    set_register_value_32(cpu_state, rt, fetch_word(xn_value));
   }
   else if (l == STORE_L) {
-    write_word(cpu_state->R[xn].X, cpu_state->R[rt].W);
+    write_word(xn_value, rt_value);
   }
 }
 
 void sdt_postind_32(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l) {
   assert(l == LOAD_L || l == STORE_L);
+  uint64_t xn_value = get_register_value_64(cpu_state, xn);
+  uint32_t rt_value = get_register_value_32(cpu_state, rt);
   if (l == LOAD_L) {
-    cpu_state->R[rt].W = fetch_word(cpu_state->R[xn].X);
+    set_register_value_32(cpu_state, rt, fetch_word(xn_value));
   }
   else if (l == STORE_L) {
-    write_word(cpu_state->R[xn].X, cpu_state->R[rt].W);
+    write_word(xn_value, rt_value);
   }
-  cpu_state->R[xn].X = cpu_state->R[xn].X + simm9;
+  set_register_value_64(cpu_state, xn, xn_value + simm9);
 }
 
 void execute_load_literal_32(state_t *cpu_state, uint32_t instruction) {
     uint8_t rt = SELECT_BITS(instruction, DT_RT_OFFSET, DT_RT_SIZE);
     int64_t simm19 = SELECT_BITS(instruction, DT_SIMM19_OFFSET, DT_SIMM19_SIZE);
     simm19 = SIGN_EXT(simm19, 19, 64) * 4;
-    cpu_state->R[rt].W = fetch_word(cpu_state->PC.X + simm19);
+    set_register_value_32(cpu_state, rt, cpu_state->PC.X + simm19);
 }
 
 void execute_sdt_32(state_t *cpu_state, uint32_t instruction) {
