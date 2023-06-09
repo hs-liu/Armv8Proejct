@@ -50,9 +50,11 @@ typedef struct {
 
 void set_NV_flags_32(state_t *, uint32_t);
 void set_NV_flags_64(state_t *, uint64_t);
+void set_NV_flags(state_t *, uint64_t, uint8_t);
 
 uint32_t get_register_value_32(state_t *, uint8_t);
 void set_register_value_32(state_t *, uint8_t, uint32_t);
+void set_register_value(state_t *, uint8_t, uint64_t, uint8_t);
 uint64_t get_register_value_64(state_t *, uint8_t);
 void set_register_value_64(state_t *, uint8_t, uint64_t);
 

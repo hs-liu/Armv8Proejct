@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -22,7 +23,6 @@ void print_usage(void) {
     fprintf(stderr, "Usage: ./emulate <bin_file> [<out_file>]\n");
 }
 
-
 void set_NV_flags_32(state_t *state, uint32_t result) {
     state->PSTATE.N = result >> 31;
     state->PSTATE.Z = result == 0;
@@ -31,6 +31,18 @@ void set_NV_flags_32(state_t *state, uint32_t result) {
 void set_NV_flags_64(state_t *state, uint64_t result) {
     state->PSTATE.N = result >> 63;
     state->PSTATE.Z = result == 0;
+}
+
+void set_NV_flags(state_t *state, uint64_t result, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (sf == SF_32) {
+        state->PSTATE.N = SELECT_BITS(result, 31, 1);
+        state->PSTATE.Z = SELECT_BITS(result, 0, 32) == 0;
+    }
+    else {
+        state->PSTATE.N = result >> 63;
+        state->PSTATE.Z = result == 0;
+    }
 }
 
 void load_bin_to_memory(char *file_name) {
@@ -103,6 +115,62 @@ void write_word_64(uint64_t address, uint64_t word) {
     }
 
     *(uint64_t *) &main_memory[address] = word;
+}
+
+uint32_t get_register_value_32(state_t *cpu_state, uint8_t reg_num) {
+    if (reg_num == ZR_REG) {
+        return 0;
+    }
+    return cpu_state->R[reg_num].W;
+}
+
+void set_register_value_32(state_t *cpu_state, uint8_t reg_num, uint32_t value) {
+    if (reg_num == ZR_REG) {
+        return;
+    }
+    cpu_state->R[reg_num].W = value;
+    cpu_state->R[reg_num].X &= 0x00000000FFFFFFFF;
+}
+
+uint64_t get_register_value_64(state_t *cpu_state, uint8_t reg_num) {
+    if (reg_num == ZR_REG) {
+        return 0;
+    }
+    return cpu_state->R[reg_num].X;
+}
+
+void set_register_value_64(state_t *cpu_state, uint8_t reg_num, uint64_t value) {
+    if (reg_num == ZR_REG) {
+        return;
+    }
+    cpu_state->R[reg_num].X = value;
+}
+
+uint64_t get_register_value(state_t *cpu_state, uint8_t reg_num, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (reg_num == ZR_REG) {
+        return 0;
+    }
+    if (sf == SF_32) {
+        return cpu_state->R[reg_num].W;
+    }
+    else {
+        return cpu_state->R[reg_num].X;
+    }
+}
+
+void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (reg_num == ZR_REG) {
+        return;
+    }
+    if (sf == SF_32) {
+        cpu_state->R[reg_num].W = value;
+        cpu_state->R[reg_num].X &= 0x00000000FFFFFFFF;
+    }
+    else {
+        cpu_state->R[reg_num].X = value;
+    }
 }
 
 void output_result(state_t *cpu_state, FILE *fp) {
@@ -201,36 +269,6 @@ bool emulate_cycle(state_t *cpu_state) {
 
     return true;
 }
-
-uint32_t get_register_value_32(state_t *cpu_state, uint8_t reg_num) {
-    if (reg_num == ZR_REG) {
-        return 0;
-    }
-    return cpu_state->R[reg_num].W;
-}
-
-void set_register_value_32(state_t *cpu_state, uint8_t reg_num, uint32_t value) {
-    if (reg_num == ZR_REG) {
-        return;
-    }
-    cpu_state->R[reg_num].W = value;
-    cpu_state->R[reg_num].X &= 0x00000000FFFFFFFF;
-}
-
-uint64_t get_register_value_64(state_t *cpu_state, uint8_t reg_num) {
-    if (reg_num == ZR_REG) {
-        return 0;
-    }
-    return cpu_state->R[reg_num].X;
-}
-
-void set_register_value_64(state_t *cpu_state, uint8_t reg_num, uint64_t value) {
-    if (reg_num == ZR_REG) {
-        return;
-    }
-    cpu_state->R[reg_num].X = value;
-}
-
 
 int main(int argc, char **argv) {
     FILE *output_fp;
