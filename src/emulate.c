@@ -250,16 +250,7 @@ bool emulate_cycle(state_t *cpu_state) {
     }
 
     if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
-        uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
-        if (sf == SF_32) {
-            execute_dpreg_instruction_32(cpu_state, instruction);
-        } else if (sf == SF_64) {
-            execute_dpreg_instruction_64(cpu_state, instruction);
-        } else {
-            fprintf(stderr, "Illegal state: invalid sf value\n");
-            fprintf(stderr, "Exiting!\n");
-            exit(EXIT_FAILURE);
-        }
+        execute_dpreg_instruction(cpu_state, instruction);
         cpu_state->PC.X += WORD_SIZE_BYTES;
     }
 
