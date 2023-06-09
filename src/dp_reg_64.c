@@ -187,7 +187,9 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
                 op2 = asr_64(state, rm, operand);
                 break;
             default:
-                assert(false); // Should never happen
+                fprintf(stderr, "Illegal instruction: invalid shift value\n");
+                fprintf(stderr, "Exiting!\n");
+                exit(EXIT_FAILURE);
         }
         switch (opc) {
             case ADD_OPC:
@@ -203,7 +205,9 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
                 subs_64_imm(state, rd, rn, op2);
                 break;
             default:
-                assert(false); // Should never happen
+                fprintf(stderr, "Illegal instruction: invalid opc value\n");
+                fprintf(stderr, "Exiting!\n");
+                exit(EXIT_FAILURE);
         }
     }
 

@@ -29,7 +29,7 @@ void bic_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
         state->R[dest].W = 0;
         state->R[dest].X &= 0x00000000FFFFFFFF;
         return;
-    } 
+    }
     state->R[dest].W = state->R[src1].W & ~op2;
     state->R[dest].X &= 0x00000000FFFFFFFF;
 }
@@ -43,9 +43,8 @@ void orr_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
         state->R[dest].X &= 0x00000000FFFFFFFF;
         return;
     } 
-        state->R[dest].W = state->R[src1].W | op2;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-    
+    state->R[dest].W = state->R[src1].W | op2;
+    state->R[dest].X &= 0x00000000FFFFFFFF;
 }
 
 void orn_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
@@ -57,13 +56,12 @@ void orn_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
         state->R[dest].X &= 0x00000000FFFFFFFF;
         return;
     }
-        state->R[dest].W = state->R[src1].W | ~op2;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-   
+
+    state->R[dest].W = state->R[src1].W | ~op2;
+    state->R[dest].X &= 0x00000000FFFFFFFF;
 }
 
 void eon_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-
     if (dest == ZR_REG) {
         return;
     }
@@ -71,9 +69,9 @@ void eon_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
         state->R[dest].W = ~op2;
         state->R[dest].X &= 0x00000000FFFFFFFF;
     }
-        state->R[dest].W = state->R[src1].W ^ ~op2;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-    
+
+    state->R[dest].W = state->R[src1].W ^ ~op2;
+    state->R[dest].X &= 0x00000000FFFFFFFF;
 }
 
 void eor_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
@@ -84,9 +82,9 @@ void eor_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
         state->R[dest].X = op2;
         state->R[dest].X &= 0x00000000FFFFFFFF;
     }
-        state->R[dest].W = state->R[src1].W ^ op2;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-   
+
+    state->R[dest].W = state->R[src1].W ^ op2;
+    state->R[dest].X &= 0x00000000FFFFFFFF;
 }
 
 void ands_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {

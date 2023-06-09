@@ -56,7 +56,6 @@ void execute_dpimm_instruction_64(state_t *state, uint32_t instruction) {
     uint8_t rd = SELECT_BITS(instruction, IMM_RD_OFFSET, IMM_RD_SIZE);
 
     assert(SELECT_BITS(instruction, IMM_OFFSET, IMM_SIZE) == IMM_VALUE);
-
     assert(sf == SF_64);
 
     if (opi == IMM_ARITHMETIC_OPI) {
