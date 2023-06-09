@@ -58,3 +58,8 @@ void add_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
 void adds_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
 void sub_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
 void subs_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
+
+void add_imm(state_t *, uint8_t, uint8_t, uint64_t, uint8_t);
+void adds_imm(state_t *, uint8_t, uint8_t, uint64_t, uint8_t);
+void sub_imm(state_t *, uint8_t, uint8_t, uint64_t, uint8_t);
+void subs_imm(state_t *, uint8_t, uint8_t, uint64_t, uint8_t);
