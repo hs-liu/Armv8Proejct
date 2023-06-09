@@ -9,179 +9,85 @@
 #include "dp_imm.h"
 
 void and_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].W = 0;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-        return;
-    }
-    state->R[dest].W = state->R[src1].W & op2;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src1) & op2;
+    set_register_value_32(state, dest, result);
 }
 
 void bic_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].W = 0;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-        return;
-    }
-    state->R[dest].W = state->R[src1].W & ~op2;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src1) & ~op2;
+    set_register_value_32(state, dest, result);
 }
 
 void orr_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].W = op2;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-        return;
-    } 
-    state->R[dest].W = state->R[src1].W | op2;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src1) | op2;
+    set_register_value_32(state, dest, result);
 }
 
 void orn_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].W = ~op2;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-        return;
-    }
-
-    state->R[dest].W = state->R[src1].W | ~op2;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src1) | ~op2;
+    set_register_value_32(state, dest, result);
 }
 
 void eon_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].W = ~op2;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-    }
-
-    state->R[dest].W = state->R[src1].W ^ ~op2;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src1) ^ ~op2;
+    set_register_value_32(state, dest, result);
 }
 
 void eor_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].X = op2;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-    }
-
-    state->R[dest].W = state->R[src1].W ^ op2;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src1) ^ op2;
+    set_register_value_32(state, dest, result);
 }
 
 void ands_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-    if (dest == ZR_REG) {
-        set_NV_flags_32(state, state->R[src1].W & op2);
-        state->PSTATE.C = 0;
-        state->PSTATE.V = 0;
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].W = 0;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-        set_NV_flags_32(state, state->R[dest].W);
-        state->PSTATE.C = 0;
-        state->PSTATE.V = 0;
-        return;
-    }
-    state->R[dest].W = state->R[src1].W & op2;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
-    set_NV_flags_32(state, state->R[dest].W);
+    uint32_t result = get_register_value_32(state, src1) & op2;
+    set_register_value_32(state, dest, result);
+    set_NV_flags_32(state, result);
     state->PSTATE.C = 0;
     state->PSTATE.V = 0;
 }
 
 void bics_32(state_t *state, uint8_t dest, uint8_t src1, uint32_t op2) {
-    if (dest == ZR_REG) {
-        set_NV_flags_32(state, state->R[src1].W & ~op2);
-        return;
-    } 
-    if (src1 == ZR_REG) {
-        state->R[dest].W = 0;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-        set_NV_flags_32(state, state->R[dest].W);
-        return;
-    }
-    state->R[dest].W = state->R[src1].W & ~op2;
-    set_NV_flags_32(state, state->R[dest].W);
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src1) & ~op2;
+    set_register_value_32(state, dest, result);
+    set_NV_flags_32(state, result);
     state->PSTATE.C = 0;
     state->PSTATE.V = 0;
 }
 
 void madd_32(state_t *state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm) {
-    if (src == ZR_REG) {
-        state->R[dest].W = state->R[rn].W * state->R[rm].W;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-        return;
-    }
-    state->R[dest].W = state->R[src].W + state->R[rn].W * state->R[rm].W;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src);
+    result += get_register_value_32(state, rn) * get_register_value_32(state, rm);
+    set_register_value_32(state, dest, result);
 }
 
 void msub_32(state_t *state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm) {
-    if (src == ZR_REG) {
-        state->R[dest].W = - state->R[rn].W * state->R[rm].W;
-        state->R[dest].X &= 0x00000000FFFFFFFF;
-        return;
-    }
-    state->R[dest].W = state->R[src].W - state->R[rn].W * state->R[rm].W;
-    state->R[dest].X &= 0x00000000FFFFFFFF;
+    uint32_t result = get_register_value_32(state, src);
+    result -= get_register_value_32(state, rn) * get_register_value_32(state, rm);
+    set_register_value_32(state, dest, result);
 }
 
 uint32_t lsl_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    if (operand_reg == ZR_REG) {
-        return 0;
-    }
-    return state->R[operand_reg].W << shift_amount;
-
+    return get_register_value_32(state, operand_reg) << shift_amount;
 }
 
 uint32_t lsr_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    if (operand_reg == ZR_REG) {
-        return 0;
-    }
-    return state->R[operand_reg].W >> shift_amount;
+    return get_register_value_32(state, operand_reg) >> shift_amount;
 }
 
 uint32_t asr_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    if (operand_reg == ZR_REG) {
-        return 0;
-    }
-    int32_t result = state->R[operand_reg].W;
+    int32_t result = get_register_value_32(state, operand_reg);
     result >>= shift_amount;
-    return result;
+    return (uint32_t) result;
 
 }
 
 uint32_t ror_32(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    if (operand_reg == ZR_REG) {
-        return 0;
-    }
-    uint32_t mask = ((1 << (shift_amount + 1)) - 1);
-    uint32_t lower_bits = state->R[operand_reg].X & mask;
+    uint32_t operand = get_register_value_32(state, operand_reg);
+    uint32_t lower_bits = SELECT_BITS(operand, 0, shift_amount);
+    uint32_t upper_bits = SELECT_BITS(operand, shift_amount, 32 - shift_amount);
     lower_bits <<= (32 - shift_amount);
-    uint32_t result = state->R[operand_reg].W >> shift_amount;
-    result |= lower_bits;
-    return result;
+    upper_bits |= lower_bits;
+    return upper_bits;
 }
 
 void execute_dpreg_instruction_32(state_t *state, uint32_t instruction) {

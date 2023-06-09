@@ -10,148 +10,81 @@
 
 
 void and_64(state_t *state, uint8_t dest, uint8_t src1, uint64_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].X = 0;
-        return;
-    }
-    state->R[dest].X = state->R[src1].X & op2;
+    uint64_t result = get_register_value_64(state, src1) & op2;
+    set_register_value_64(state, dest, result);
 }
 
 void bic_64(state_t *state, uint8_t dest, uint8_t src1, uint64_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].X = 0;
-        return;
-    }
-    state->R[dest].X = state->R[src1].X & ~op2;
+    uint64_t result = get_register_value_64(state, src1) & ~op2;
+    set_register_value_64(state, dest, result);
 }
 
 void orr_64(state_t *state, uint8_t dest, uint8_t src1, uint64_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].X = op2;
-        return;
-    }
-    state->R[dest].X = state->R[src1].X | op2;
+    uint64_t result = get_register_value_64(state, src1) | op2;
+    set_register_value_64(state, dest, result);
 }
 
 void orn_64(state_t *state, uint8_t dest, uint8_t src1, uint64_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].X = ~op2;
-        return;
-    }
-    state->R[dest].X = state->R[src1].X | ~op2;
+    uint64_t result = get_register_value_64(state, src1) | ~op2;
+    set_register_value_64(state, dest, result);
 }
 
 void eon_64(state_t *state, uint8_t dest, uint8_t src1, uint64_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].X = ~op2;
-        return;
-    }
-    state->R[dest].X = state->R[src1].X ^ ~op2;
+    uint64_t result = get_register_value_64(state, src1) ^ ~op2;
+    set_register_value_64(state, dest, result);
 }
 
 void eor_64(state_t *state, uint8_t dest, uint8_t src1, uint64_t op2) {
-    if (dest == ZR_REG) {
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].X = op2;
-        return;
-    }
-    state->R[dest].X = state->R[src1].X ^ op2;
+    uint64_t result = get_register_value_64(state, src1) ^ op2;
+    set_register_value_64(state, dest, result);
 }
 
 void ands_64(state_t *state, uint8_t dest, uint8_t src1, uint64_t op2) {
-    if (dest == ZR_REG) {
-        set_NV_flags_64(state, state->R[src1].X & op2);
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].X = 0;
-        set_NV_flags_64(state, state->R[dest].X);
-        return;
-    }
-    state->R[dest].X = state->R[src1].X & op2;
-    set_NV_flags_64(state, state->R[dest].X);
+    uint64_t result = get_register_value_64(state, src1) & op2;
+    set_register_value_64(state, dest, result);
+    set_NV_flags_64(state, result);
     state->PSTATE.C = 0;
     state->PSTATE.V = 0;
 }
 
 void bics_64(state_t *state, uint8_t dest, uint8_t src1, uint64_t op2) {
-    if (dest == ZR_REG) {
-        set_NV_flags_64(state, state->R[src1].X & ~op2);
-        return;
-    }
-    if (src1 == ZR_REG) {
-        state->R[dest].X = 0;
-        set_NV_flags_64(state, state->R[dest].X);
-        return;
-    }
-    state->R[dest].X = state->R[src1].X & ~op2;
-    set_NV_flags_64(state, state->R[dest].X);
+    uint64_t result = get_register_value_64(state, src1) & ~op2;
+    set_register_value_64(state, dest, result);
+    set_NV_flags_64(state, result);
     state->PSTATE.C = 0;
     state->PSTATE.V = 0;
 }
 
 void madd_64(state_t *state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm) {
-    if (src == ZR_REG) {
-        state->R[dest].X = state->R[rn].X * state->R[rm].X;
-        return;
-    } 
-    state->R[dest].X = state->R[src].X + state->R[rn].X * state->R[rm].X;
+    uint64_t result = get_register_value_64(state, src);
+    result += get_register_value_64(state, rn) * get_register_value_64(state, rm);
+    set_register_value_64(state, dest, result);
 }
 
 void msub_64(state_t *state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm) {
-    if (src == ZR_REG) {
-        state->R[dest].X = -state->R[rn].X * state->R[rm].X;
-        return;
-    }
-    state->R[dest].X = state->R[src].X - state->R[rn].X * state->R[rm].X;
+    uint64_t result = get_register_value_64(state, src);
+    result -= get_register_value_64(state, rn) * get_register_value_64(state, rm);
+    set_register_value_64(state, dest, result);
 }
 
 uint64_t lsl_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    if (operand_reg == ZR_REG) {
-        return 0;
-    }
-    return state->R[operand_reg].X << shift_amount;
+    return get_register_value_64(state, operand_reg) << shift_amount;
 }
 
 uint64_t lsr_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    if (operand_reg == ZR_REG) {
-        return 0;
-    }
-    return state->R[operand_reg].X >> shift_amount;
+    return get_register_value_64(state, operand_reg) >> shift_amount;
 }
 
 uint64_t asr_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    if (operand_reg == ZR_REG) {
-        return 0;
-    }
-    int64_t result = state->R[operand_reg].X;
+    int64_t result = get_register_value_64(state, operand_reg);
     result >>= shift_amount;
-    return result;
+    return (uint64_t) result;
 }
 
 uint64_t ror_64(state_t *state, uint8_t operand_reg, uint8_t shift_amount) {
-    if (operand_reg == ZR_REG) {
-        return 0;
-    }
-    uint64_t lower_bits = SELECT_BITS(state->R[operand_reg].X, 0, shift_amount);
-    uint64_t upper_bits = SELECT_BITS(state->R[operand_reg].X, shift_amount, 64 - shift_amount);
+    uint64_t operand = get_register_value_64(state, operand_reg);
+    uint64_t lower_bits = SELECT_BITS(operand, 0, shift_amount);
+    uint64_t upper_bits = SELECT_BITS(operand, shift_amount, 64 - shift_amount);
     lower_bits <<= (64 - shift_amount);
     upper_bits |= lower_bits;
     return upper_bits;
@@ -167,8 +100,6 @@ void execute_dpreg_instruction_64(state_t *state, uint32_t instruction) {
     uint8_t operand = SELECT_BITS(instruction, REG_OPERAND_OFFSET, REG_OPERAND_SIZE);
     uint8_t rn = SELECT_BITS(instruction, REG_RN_OFFSET, REG_RN_SIZE);
     uint8_t rd = SELECT_BITS(instruction, REG_RD_OFFSET, REG_RD_SIZE);
-    printf("rn: %d\n", rn);
-    printf("rd: %d\n", rd);
 
     // Check if arithmetic
     if (m == ARITHMETIC_M && CHECK_BITS(opr, ARITHMETIC_MASK, ARITHMETIC_VALUE)) {
