@@ -31,7 +31,7 @@ void subs_64_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm) {
         state->R[dest].X = result;
     }
     set_NV_flags_64(state, result);
-    // state->PSTATE.C = (result > state->R[src1].X);
+    state->PSTATE.C = !(result > state->R[src1].X);
     state->PSTATE.V = (state->R[src1].X >> 63 != imm >> 63) && (result >> 63 == imm >> 63);
 }
 

@@ -35,14 +35,13 @@ void subs_32_imm(state_t *state, uint8_t dest, uint8_t src1, uint32_t imm) {
         state->R[dest].W = result;
     }
     set_NV_flags_32(state, result);
-    // state->PSTATE.C = (result > state->R[src1].W);
+    state->PSTATE.C = !(result > state->R[src1].W);
     state->PSTATE.V = (state->R[src1].W >> 31 != imm >> 31) && (result >> 31 == imm >> 31);
 }
 
 void movn_32_imm(state_t *state, uint8_t dest, uint32_t imm) {
     state->R[dest].W = ~imm;
     state->R[dest].X &= 0x00000000FFFFFFFF;
-
 }
 
 void movz_32_imm(state_t *state, uint8_t dest, uint32_t imm) {
