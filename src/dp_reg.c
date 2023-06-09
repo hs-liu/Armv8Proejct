@@ -42,7 +42,7 @@ void eor(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t s
 void ands(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
     uint64_t result = get_register_value(cpu_state, src1, sf) & op2;
     set_register_value(cpu_state, dest, result, sf);
-    set_NV_flags(cpu_state, result, sf);
+    set_NZ_flags(cpu_state, result, sf);
     cpu_state->PSTATE.C = 0;
     cpu_state->PSTATE.V = 0;
 }
@@ -50,7 +50,7 @@ void ands(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t 
 void bics(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
     uint64_t result = get_register_value(cpu_state, src1, sf) & ~op2;
     set_register_value(cpu_state, dest, result, sf);
-    set_NV_flags(cpu_state, result, sf);
+    set_NZ_flags(cpu_state, result, sf);
     cpu_state->PSTATE.C = 0;
     cpu_state->PSTATE.V = 0;
 }

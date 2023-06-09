@@ -16,7 +16,7 @@ void adds_imm(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t imm, uint
     uint64_t reg_value = get_register_value(cpu_state, src1, sf);
     uint64_t result = reg_value + imm;
     set_register_value(cpu_state, dest, result, sf);
-    set_NV_flags(cpu_state, result, sf);
+    set_NZ_flags(cpu_state, result, sf);
     int msb_index = sf == SF_32 ? 31 : 63;
     result = sf == SF_32 ? (uint32_t)result : (uint64_t)result;
     cpu_state->PSTATE.C = (result < reg_value);
@@ -33,7 +33,7 @@ void subs_imm(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t imm, uint
     uint64_t reg_value = get_register_value(cpu_state, src1, sf);
     uint64_t result = reg_value - imm;
     set_register_value(cpu_state, dest, result, sf);
-    set_NV_flags(cpu_state, result, sf);
+    set_NZ_flags(cpu_state, result, sf);
     int msb_index = sf == SF_32 ? 31 : 63;
     result = sf == SF_32 ? (uint32_t)result : (uint64_t)result;
     cpu_state->PSTATE.C = !(result > reg_value);

@@ -23,7 +23,7 @@ void print_usage(void) {
     fprintf(stderr, "Usage: ./emulate <bin_file> [<out_file>]\n");
 }
 
-void set_NV_flags(state_t *cpu_state, uint64_t result, uint8_t sf) {
+void set_NZ_flags(state_t *cpu_state, uint64_t result, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     int msb_index = sf == SF_32 ? 31 : 63;
     if (sf == SF_32) {

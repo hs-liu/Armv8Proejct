@@ -49,7 +49,7 @@ typedef struct {
 
 void setup(state_t *cpu_state);
 void print_usage(void);
-void set_NV_flags(state_t *cpu_state, uint64_t result, uint8_t sf);
+void set_NZ_flags(state_t *cpu_state, uint64_t result, uint8_t sf);
 void load_bin_to_memory(char *file_name);
 uint64_t fetch_word(uint64_t address, uint8_t sf);
 void write_word(uint64_t address, uint64_t word, uint8_t sf);
