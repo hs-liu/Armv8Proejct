@@ -8,7 +8,7 @@
 #include "dp_reg.h"
 #include "dp_imm.h"
 
-void and (state_t *state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
+void and(state_t *state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
     uint64_t result = get_register_value(state, src1, sf) & op2;
     set_register_value(state, dest, result, sf);
 }
