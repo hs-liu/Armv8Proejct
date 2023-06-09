@@ -117,6 +117,37 @@ void write_word_64(uint64_t address, uint64_t word) {
     *(uint64_t *) &main_memory[address] = word;
 }
 
+uint64_t fetch_word(uint64_t address, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (address >= MEMORY_CAPACITY) {
+        fprintf(stderr, "Illegal state: attempted to fetch beyond memory bounds\n");
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (sf == SF_32) {
+        return *(uint32_t *) &main_memory[address];
+    }
+    else {
+        return *(uint64_t *) &main_memory[address];
+    }
+}
+
+void write_word(uint64_t address, uint64_t word, uint8_t sf) {
+    if (address >= MEMORY_CAPACITY) {
+        fprintf(stderr, "Illegal state: attempted to write beyond memory bounds\n");
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (sf == SF_32) {
+        *(uint32_t *) &main_memory[address] = word;
+    }
+    else {
+        *(uint64_t *) &main_memory[address] = word;
+    }
+}
+
 uint32_t get_register_value_32(state_t *cpu_state, uint8_t reg_num) {
     if (reg_num == ZR_REG) {
         return 0;
