@@ -48,16 +48,7 @@
 #define MOVZ_OPC 0x2
 #define MOVK_OPC 0x3
 
-void execute_dpimm_instruction(state_t *, uint32_t); 
-
-void add_32_imm(state_t *, uint8_t, uint8_t, uint32_t);
-void adds_32_imm(state_t *, uint8_t, uint8_t, uint32_t);
-void sub_32_imm(state_t *, uint8_t, uint8_t, uint32_t);
-void subs_32_imm(state_t *, uint8_t, uint8_t, uint32_t);
-void add_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
-void adds_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
-void sub_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
-void subs_64_imm(state_t *, uint8_t, uint8_t, uint64_t);
+void execute_dpimm_instruction(state_t *, uint32_t);
 
 void add_imm(state_t *, uint8_t, uint8_t, uint64_t, uint8_t);
 void adds_imm(state_t *, uint8_t, uint8_t, uint64_t, uint8_t);

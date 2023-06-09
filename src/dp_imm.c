@@ -18,7 +18,7 @@ void adds_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t 
     set_register_value(state, dest, result, sf);
     set_NV_flags(state, result, sf);
     int lsb_index = sf == SF_32 ? 31 : 63;
-    result = sf == SF_32 ? (uint32_t) result : (uint64_t) result;
+    result = sf == SF_32 ? (uint32_t)result : (uint64_t)result;
     state->PSTATE.C = (result < reg_value);
     state->PSTATE.V = (SELECT_BITS(reg_value, lsb_index, 1) == SELECT_BITS(imm, lsb_index, 1));
     state->PSTATE.V = state->PSTATE.V && (SELECT_BITS(result, lsb_index, 1) != SELECT_BITS(imm, lsb_index, 1));
@@ -35,7 +35,7 @@ void subs_imm(state_t *state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t 
     set_register_value(state, dest, result, sf);
     set_NV_flags(state, result, sf);
     int lsb_index = sf == SF_32 ? 31 : 63;
-    result = sf == SF_32 ? (uint32_t) result : (uint64_t) result;
+    result = sf == SF_32 ? (uint32_t)result : (uint64_t)result;
     state->PSTATE.C = !(result > reg_value);
     state->PSTATE.V = (SELECT_BITS(reg_value, lsb_index, 1) != SELECT_BITS(imm, lsb_index, 1));
     state->PSTATE.V = state->PSTATE.V && (SELECT_BITS(result, lsb_index, 1) == SELECT_BITS(imm, lsb_index, 1));

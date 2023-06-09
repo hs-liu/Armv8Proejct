@@ -60,12 +60,12 @@ void sdt_postind(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, uint
 }
 
 void execute_load_literal(state_t *cpu_state, uint32_t instruction, uint8_t sf) {
-    assert(sf == SF_32 || sf == SF_64);
-    uint8_t rt = SELECT_BITS(instruction, DT_RT_OFFSET, DT_RT_SIZE);
-    int64_t simm19 = SELECT_BITS(instruction, DT_SIMM19_OFFSET, DT_SIMM19_SIZE);
-    simm19 = SIGN_EXT(simm19, 19, 64) * 4;
-    uint64_t value = fetch_word(cpu_state->PC.X + simm19, sf);
-    set_register_value(cpu_state, rt, value, sf);
+  assert(sf == SF_32 || sf == SF_64);
+  uint8_t rt = SELECT_BITS(instruction, DT_RT_OFFSET, DT_RT_SIZE);
+  int64_t simm19 = SELECT_BITS(instruction, DT_SIMM19_OFFSET, DT_SIMM19_SIZE);
+  simm19 = SIGN_EXT(simm19, 19, 64) * 4;
+  uint64_t value = fetch_word(cpu_state->PC.X + simm19, sf);
+  set_register_value(cpu_state, rt, value, sf);
 }
 
 void execute_sdt(state_t *cpu_state, uint32_t instruction, uint8_t sf) {
@@ -89,14 +89,15 @@ void execute_sdt(state_t *cpu_state, uint32_t instruction, uint8_t sf) {
     uint8_t i = SELECT_BITS(instruction, PRE_POST_I_OFFSET, PRE_POST_I_SIZE);
 
     if (i == PRE_INDEX_I) {
-        sdt_preind(cpu_state, simm9, xn, rt, l, sf);
-    } else if (i == POST_INDEX_I) {
-        sdt_postind(cpu_state, simm9, xn, rt, l, sf);
+      sdt_preind(cpu_state, simm9, xn, rt, l, sf);
+    }
+    else if (i == POST_INDEX_I) {
+      sdt_postind(cpu_state, simm9, xn, rt, l, sf);
     }
   }
   else {
     fprintf(stderr, "Illegal state: invalid single data transfer instruction\n");
     fprintf(stderr, "Exiting!\n");
     exit(EXIT_FAILURE);
-  } 
+  }
 }

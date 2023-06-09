@@ -47,21 +47,8 @@ typedef struct {
   pstate_t PSTATE;
 } state_t;
 
-
-void set_NV_flags_32(state_t *, uint32_t);
-void set_NV_flags_64(state_t *, uint64_t);
 void set_NV_flags(state_t *, uint64_t, uint8_t);
-
-uint32_t get_register_value_32(state_t *, uint8_t);
-void set_register_value_32(state_t *, uint8_t, uint32_t);
-uint64_t get_register_value_64(state_t *, uint8_t);
-void set_register_value_64(state_t *, uint8_t, uint64_t);
 void set_register_value(state_t *, uint8_t, uint64_t, uint8_t);
 uint64_t get_register_value(state_t *, uint8_t, uint8_t);
-
-uint32_t fetch_word_32(uint64_t);
-void write_word_32(uint64_t, uint32_t);
-uint64_t fetch_word_64(uint64_t);
-void write_word_64(uint64_t, uint64_t);
 uint64_t fetch_word(uint64_t, uint8_t);
 void write_word(uint64_t, uint64_t, uint8_t);

@@ -31,7 +31,6 @@
 #define REG_RD_OFFSET 0
 #define REG_RD_SIZE 5
 
-
 #define ARITHMETIC_M 0
 #define ARITHMETIC_MASK 0x9
 #define ARITHMETIC_VALUE 0x8
