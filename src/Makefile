@@ -10,7 +10,7 @@ CFLAGS  ?= -std=c17 -g\
 all: assemble emulate
 
 assemble: assemble.o
-emulate: emulate.o branch.o dp_reg_32.o dp_imm_32.o dp_reg_64.o dp_imm_64.o data_trans.o
+emulate: emulate.o branch.o dp_reg_32.o dp_reg_64.o dp_imm.o data_trans.o
 
 clean:
 	$(RM) *.o assemble emulate
