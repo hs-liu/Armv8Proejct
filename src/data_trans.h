@@ -92,3 +92,5 @@ void execute_load_store_64(state_t *cpu_state, uint32_t instruction);
 
 void execute_sdt_32(state_t *cpu_state, uint32_t instruction);
 void execute_sdt_64(state_t *cpu_state, uint32_t instruction);
+
+// void execute_sdt(state_t *, uint32_t, uint8_t);
