@@ -47,21 +47,13 @@ typedef struct {
   pstate_t PSTATE;
 } state_t;
 
-
-void set_NV_flags_32(state_t *, uint32_t);
-void set_NV_flags_64(state_t *, uint64_t);
-void set_NV_flags(state_t *, uint64_t, uint8_t);
-
-uint32_t get_register_value_32(state_t *, uint8_t);
-void set_register_value_32(state_t *, uint8_t, uint32_t);
-uint64_t get_register_value_64(state_t *, uint8_t);
-void set_register_value_64(state_t *, uint8_t, uint64_t);
-void set_register_value(state_t *, uint8_t, uint64_t, uint8_t);
-uint64_t get_register_value(state_t *, uint8_t, uint8_t);
-
-uint32_t fetch_word_32(uint64_t);
-void write_word_32(uint64_t, uint32_t);
-uint64_t fetch_word_64(uint64_t);
-void write_word_64(uint64_t, uint64_t);
-uint64_t fetch_word(uint64_t, uint8_t);
-void write_word(uint64_t, uint64_t, uint8_t);
+void setup(state_t *cpu_state);
+void print_usage(void);
+void set_NV_flags(state_t *cpu_state, uint64_t result, uint8_t sf);
+void load_bin_to_memory(char *file_name);
+uint64_t fetch_word(uint64_t address, uint8_t sf);
+void write_word(uint64_t address, uint64_t word, uint8_t sf);
+uint64_t get_register_value(state_t *cpu_state, uint8_t reg_num, uint8_t sf);
+void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uint8_t sf);
+void output_result(state_t *cpu_state, FILE *fp);
+bool emulate_cycle(state_t *cpu_state);

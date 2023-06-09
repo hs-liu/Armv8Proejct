@@ -23,26 +23,14 @@ void print_usage(void) {
     fprintf(stderr, "Usage: ./emulate <bin_file> [<out_file>]\n");
 }
 
-void set_NV_flags_32(state_t *state, uint32_t result) {
-    state->PSTATE.N = result >> 31;
-    state->PSTATE.Z = result == 0;
-}
-
-void set_NV_flags_64(state_t *state, uint64_t result) {
-    state->PSTATE.N = result >> 63;
-    state->PSTATE.Z = result == 0;
-}
-
-void set_NV_flags(state_t *state, uint64_t result, uint8_t sf) {
+void set_NV_flags(state_t *cpu_state, uint64_t result, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
+    int msb_index = sf == SF_32 ? 31 : 63;
     if (sf == SF_32) {
-        state->PSTATE.N = SELECT_BITS(result, 31, 1);
-        state->PSTATE.Z = SELECT_BITS(result, 0, 32) == 0;
+        result = SELECT_BITS(result, 0, 32);
     }
-    else {
-        state->PSTATE.N = result >> 63;
-        state->PSTATE.Z = result == 0;
-    }
+    cpu_state->PSTATE.N = SELECT_BITS(result, msb_index, 1);
+    cpu_state->PSTATE.Z = result == 0;
 }
 
 void load_bin_to_memory(char *file_name) {
@@ -77,46 +65,6 @@ void load_bin_to_memory(char *file_name) {
     fread(main_memory, sizeof(char), MEMORY_CAPACITY, fp);
 }
 
-uint32_t fetch_word_32(uint64_t address) {
-    if (address >= MEMORY_CAPACITY) {
-        fprintf(stderr, "Illegal state: attempted to fetch beyond memory bounds\n");
-        fprintf(stderr, "Exiting!\n");
-        exit(EXIT_FAILURE);
-    }
-
-    return *(uint32_t *) &main_memory[address];
-}
-
-void write_word_32(uint64_t address, uint32_t word) {
-    if (address >= MEMORY_CAPACITY) {
-        fprintf(stderr, "Illegal state: attempted to write beyond memory bounds\n");
-        fprintf(stderr, "Exiting!\n");
-        exit(EXIT_FAILURE);
-    }
-
-    *(uint32_t *) &main_memory[address] = word;
-}
-
-uint64_t fetch_word_64(uint64_t address) {
-    if (address >= MEMORY_CAPACITY) {
-        fprintf(stderr, "Illegal state: attempted to fetch beyond memory bounds\n");
-        fprintf(stderr, "Exiting!\n");
-        exit(EXIT_FAILURE);
-    }
-
-    return *(uint64_t *) &main_memory[address];
-}
-
-void write_word_64(uint64_t address, uint64_t word) {
-    if (address >= MEMORY_CAPACITY) {
-        fprintf(stderr, "Illegal state: attempted to write beyond memory bounds\n");
-        fprintf(stderr, "Exiting!\n");
-        exit(EXIT_FAILURE);
-    }
-
-    *(uint64_t *) &main_memory[address] = word;
-}
-
 uint64_t fetch_word(uint64_t address, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (address >= MEMORY_CAPACITY) {
@@ -126,10 +74,10 @@ uint64_t fetch_word(uint64_t address, uint8_t sf) {
     }
 
     if (sf == SF_32) {
-        return *(uint32_t *) &main_memory[address];
+        return *(uint32_t *)&main_memory[address];
     }
     else {
-        return *(uint64_t *) &main_memory[address];
+        return *(uint64_t *)&main_memory[address];
     }
 }
 
@@ -141,40 +89,11 @@ void write_word(uint64_t address, uint64_t word, uint8_t sf) {
     }
 
     if (sf == SF_32) {
-        *(uint32_t *) &main_memory[address] = word;
+        *(uint32_t *)&main_memory[address] = word;
     }
     else {
-        *(uint64_t *) &main_memory[address] = word;
+        *(uint64_t *)&main_memory[address] = word;
     }
-}
-
-uint32_t get_register_value_32(state_t *cpu_state, uint8_t reg_num) {
-    if (reg_num == ZR_REG) {
-        return 0;
-    }
-    return cpu_state->R[reg_num].W;
-}
-
-void set_register_value_32(state_t *cpu_state, uint8_t reg_num, uint32_t value) {
-    if (reg_num == ZR_REG) {
-        return;
-    }
-    cpu_state->R[reg_num].W = value;
-    cpu_state->R[reg_num].X &= 0x00000000FFFFFFFF;
-}
-
-uint64_t get_register_value_64(state_t *cpu_state, uint8_t reg_num) {
-    if (reg_num == ZR_REG) {
-        return 0;
-    }
-    return cpu_state->R[reg_num].X;
-}
-
-void set_register_value_64(state_t *cpu_state, uint8_t reg_num, uint64_t value) {
-    if (reg_num == ZR_REG) {
-        return;
-    }
-    cpu_state->R[reg_num].X = value;
 }
 
 uint64_t get_register_value(state_t *cpu_state, uint8_t reg_num, uint8_t sf) {
@@ -196,8 +115,8 @@ void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uin
         return;
     }
     if (sf == SF_32) {
-        cpu_state->R[reg_num].W = (uint32_t) value;
-        cpu_state->R[reg_num].X &= 0x00000000FFFFFFFF;
+        cpu_state->R[reg_num].W = (uint32_t)value;
+        cpu_state->R[reg_num].X = SELECT_BITS(cpu_state->R[reg_num].X, 0, 32);
     }
     else {
         cpu_state->R[reg_num].X = value;
@@ -218,7 +137,7 @@ void output_result(state_t *cpu_state, FILE *fp) {
 
     fprintf(fp, "Non-Zero Memory:\n");
     for (uint64_t addr = 0; addr < MEMORY_CAPACITY; addr += WORD_SIZE_BYTES) {
-        uint32_t word = fetch_word_32(addr);
+        uint32_t word = fetch_word(addr, SF_32);
         if (word) {
             fprintf(fp, "0x%08lx : %08x\n", addr, word);
         }
@@ -230,7 +149,7 @@ void output_result(state_t *cpu_state, FILE *fp) {
 */
 bool emulate_cycle(state_t *cpu_state) {
     // Fetch
-    uint32_t instruction = fetch_word_32(cpu_state->PC.X);
+    uint32_t instruction = fetch_word(cpu_state->PC.X, SF_32);
 
     // Decode and execute
     uint8_t op0 = SELECT_BITS(instruction, OP0_OFFSET, OP0_SIZE);
@@ -278,7 +197,8 @@ int main(int argc, char **argv) {
     FILE *output_fp;
     if (argc == 2) {
         output_fp = stdout;
-    } else if (argc == 3) {
+    }
+    else if (argc == 3) {
         char *file_name = argv[2];
         output_fp = fopen(file_name, "w");
 
@@ -286,7 +206,8 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Error writing to output file %s\n", file_name);
             return EXIT_FAILURE;
         }
-    } else {
+    }
+    else {
         print_usage();
         return EXIT_FAILURE;
     }

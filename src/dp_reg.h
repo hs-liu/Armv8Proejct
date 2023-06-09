@@ -31,7 +31,6 @@
 #define REG_RD_OFFSET 0
 #define REG_RD_SIZE 5
 
-
 #define ARITHMETIC_M 0
 #define ARITHMETIC_MASK 0x9
 #define ARITHMETIC_VALUE 0x8
@@ -67,4 +66,23 @@
 #define SUB_OPC 0x2
 #define SUBS_OPC 0x3
 
-void execute_dpreg_instruction(state_t *state, uint32_t instruction);
+void and (state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
+void bic(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
+void orr(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
+void orn(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
+void eon(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
+void eor(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
+void ands(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
+void bics(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
+void madd(state_t *cpu_state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm, uint8_t sf);
+void msub(state_t *cpu_state, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm, uint8_t sf);
+
+uint64_t lsl(state_t *cpu_state, uint8_t operand_reg, uint8_t shift_amount, uint8_t sf);
+uint64_t lsr(state_t *cpu_state, uint8_t operand_reg, uint8_t shift_amount, uint8_t sf);
+uint64_t asr(state_t *cpu_state, uint8_t operand_reg, uint8_t shift_amount, uint8_t sf);
+uint64_t ror(state_t *cpu_state, uint8_t operand_reg, uint8_t shift_amount, uint8_t sf);
+
+void execute_arithmetic_instruction(state_t *cpu_state, uint32_t instruction);
+void execute_bit_logic_instruction(state_t *cpu_state, uint32_t instruction);
+void execute_multiply_instruction(state_t *cpu_state, uint32_t instruction);
+void execute_dpreg_instruction(state_t *cpu_state, uint32_t instruction);
