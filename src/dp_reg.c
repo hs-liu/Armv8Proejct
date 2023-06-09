@@ -34,12 +34,10 @@ void eon(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t s
     set_register_value(cpu_state, dest, result, sf);
 }
 
-
 void eor(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
     uint64_t result = get_register_value(cpu_state, src1, sf) ^ op2;
     set_register_value(cpu_state, dest, result, sf);
 }
-
 
 void ands(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
     uint64_t result = get_register_value(cpu_state, src1, sf) & op2;

@@ -47,8 +47,13 @@ typedef struct {
   pstate_t PSTATE;
 } state_t;
 
-void set_NV_flags(state_t *, uint64_t, uint8_t);
-void set_register_value(state_t *, uint8_t, uint64_t, uint8_t);
-uint64_t get_register_value(state_t *, uint8_t, uint8_t);
-uint64_t fetch_word(uint64_t, uint8_t);
-void write_word(uint64_t, uint64_t, uint8_t);
+void setup(state_t *cpu_state);
+void print_usage(void);
+void set_NV_flags(state_t *cpu_state, uint64_t result, uint8_t sf);
+void load_bin_to_memory(char *file_name);
+uint64_t fetch_word(uint64_t address, uint8_t sf);
+void write_word(uint64_t address, uint64_t word, uint8_t sf);
+uint64_t get_register_value(state_t *cpu_state, uint8_t reg_num, uint8_t sf);
+void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uint8_t sf);
+void output_result(state_t *cpu_state, FILE *fp);
+bool emulate_cycle(state_t *cpu_state);
