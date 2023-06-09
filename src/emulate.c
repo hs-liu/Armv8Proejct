@@ -171,7 +171,6 @@ uint64_t get_register_value_64(state_t *cpu_state, uint8_t reg_num) {
 }
 
 void set_register_value_64(state_t *cpu_state, uint8_t reg_num, uint64_t value) {
-    printf("HIIIIII  %llx\n", value);
     if (reg_num == ZR_REG) {
         return;
     }
@@ -193,7 +192,6 @@ uint64_t get_register_value(state_t *cpu_state, uint8_t reg_num, uint8_t sf) {
 
 void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
-    printf("HIIIIII  %llx\n", value);
     if (reg_num == ZR_REG) {
         return;
     }
@@ -247,16 +245,7 @@ bool emulate_cycle(state_t *cpu_state) {
     }
 
     if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
-        uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
-        if (sf == SF_32) {
-            execute_dpimm_instruction_32(cpu_state, instruction);
-        } else if (sf == SF_64) {
-            execute_dpimm_instruction_64(cpu_state, instruction);
-        } else {
-            fprintf(stderr, "Illegal state: invalid sf value\n");
-            fprintf(stderr, "Exiting!\n");
-            exit(EXIT_FAILURE);
-        }
+        execute_dpimm_instruction(cpu_state, instruction);
         cpu_state->PC.X += WORD_SIZE_BYTES;
     }
 
@@ -280,11 +269,6 @@ bool emulate_cycle(state_t *cpu_state) {
         uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
         if (CHECK_BITS(opcode, SDT_MASK, SDT_VALUE)) {
             execute_sdt(cpu_state, instruction, sf);
-            // if (sf == SF_32) {
-            //     execute_sdt_32(cpu_state, instruction);
-            // } else {
-            //     execute_sdt_64(cpu_state, instruction);
-            // }
         }
         if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
             execute_load_literal(cpu_state, instruction, sf);
