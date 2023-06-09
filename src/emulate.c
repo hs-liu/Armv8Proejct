@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -22,7 +23,6 @@ void print_usage(void) {
     fprintf(stderr, "Usage: ./emulate <bin_file> [<out_file>]\n");
 }
 
-
 void set_NV_flags_32(state_t *state, uint32_t result) {
     state->PSTATE.N = result >> 31;
     state->PSTATE.Z = result == 0;
@@ -31,6 +31,18 @@ void set_NV_flags_32(state_t *state, uint32_t result) {
 void set_NV_flags_64(state_t *state, uint64_t result) {
     state->PSTATE.N = result >> 63;
     state->PSTATE.Z = result == 0;
+}
+
+void set_NV_flags(state_t *state, uint64_t result, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (sf == SF_32) {
+        state->PSTATE.N = SELECT_BITS(result, 31, 1);
+        state->PSTATE.Z = SELECT_BITS(result, 0, 32) == 0;
+    }
+    else {
+        state->PSTATE.N = result >> 63;
+        state->PSTATE.Z = result == 0;
+    }
 }
 
 void load_bin_to_memory(char *file_name) {
@@ -65,7 +77,7 @@ void load_bin_to_memory(char *file_name) {
     fread(main_memory, sizeof(char), MEMORY_CAPACITY, fp);
 }
 
-uint32_t fetch_word(uint64_t address) {
+uint32_t fetch_word_32(uint64_t address) {
     if (address >= MEMORY_CAPACITY) {
         fprintf(stderr, "Illegal state: attempted to fetch beyond memory bounds\n");
         fprintf(stderr, "Exiting!\n");
@@ -75,7 +87,7 @@ uint32_t fetch_word(uint64_t address) {
     return *(uint32_t *) &main_memory[address];
 }
 
-void write_word(uint64_t address, uint32_t word) {
+void write_word_32(uint64_t address, uint32_t word) {
     if (address >= MEMORY_CAPACITY) {
         fprintf(stderr, "Illegal state: attempted to write beyond memory bounds\n");
         fprintf(stderr, "Exiting!\n");
@@ -105,101 +117,35 @@ void write_word_64(uint64_t address, uint64_t word) {
     *(uint64_t *) &main_memory[address] = word;
 }
 
-void output_result(state_t *cpu_state, FILE *fp) {
-    fprintf(fp, "Registers:\n");
-    for (int i = 0; i < 31; i++) {
-        fprintf(fp, "X%02d    = %016lx\n", i, cpu_state->R[i].X);
+uint64_t fetch_word(uint64_t address, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (address >= MEMORY_CAPACITY) {
+        fprintf(stderr, "Illegal state: attempted to fetch beyond memory bounds\n");
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
     }
-    fprintf(fp, "PC     = %016lx\n", cpu_state->PC.X);
-    char n_flag = cpu_state->PSTATE.N ? 'N' : '-';
-    char z_flag = cpu_state->PSTATE.Z ? 'Z' : '-';
-    char c_flag = cpu_state->PSTATE.C ? 'C' : '-';
-    char v_flag = cpu_state->PSTATE.V ? 'V' : '-';
-    fprintf(fp, "PSTATE : %c%c%c%c\n", n_flag, z_flag, c_flag, v_flag);
 
-    fprintf(fp, "Non-Zero Memory:\n");
-    for (uint64_t addr = 0; addr < MEMORY_CAPACITY; addr += WORD_SIZE_BYTES) {
-        uint32_t word = fetch_word(addr);
-        if (word) {
-            fprintf(fp, "0x%08lx : %08x\n", addr, word);
-        }
+    if (sf == SF_32) {
+        return *(uint32_t *) &main_memory[address];
+    }
+    else {
+        return *(uint64_t *) &main_memory[address];
     }
 }
 
-/**
- * Return value is true iff the program is to continue running
-*/
-bool emulate_cycle(state_t *cpu_state) {
-    // Fetch
-    uint32_t instruction = fetch_word(cpu_state->PC.X);
-
-    // Decode and execute
-    uint8_t op0 = SELECT_BITS(instruction, OP0_OFFSET, OP0_SIZE);
-
-    if (instruction == NOP_INSTRUCTION) {
-        cpu_state->PC.X += WORD_SIZE_BYTES;
-        return true;
+void write_word(uint64_t address, uint64_t word, uint8_t sf) {
+    if (address >= MEMORY_CAPACITY) {
+        fprintf(stderr, "Illegal state: attempted to write beyond memory bounds\n");
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
     }
 
-    if (instruction == HALT_INSTRUCTION) {
-        return false;
+    if (sf == SF_32) {
+        *(uint32_t *) &main_memory[address] = word;
     }
-
-    if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
-        uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
-        if (sf == SF_32) {
-            execute_dpimm_instruction_32(cpu_state, instruction);
-        } else if (sf == SF_64) {
-            execute_dpimm_instruction_64(cpu_state, instruction);
-        } else {
-            fprintf(stderr, "Illegal state: invalid sf value\n");
-            fprintf(stderr, "Exiting!\n");
-            exit(EXIT_FAILURE);
-        }
-        cpu_state->PC.X += WORD_SIZE_BYTES;
+    else {
+        *(uint64_t *) &main_memory[address] = word;
     }
-
-    if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
-        uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
-        if (sf == SF_32) {
-            execute_dpreg_instruction_32(cpu_state, instruction);
-        } else if (sf == SF_64) {
-            execute_dpreg_instruction_64(cpu_state, instruction);
-        } else {
-            fprintf(stderr, "Illegal state: invalid sf value\n");
-            fprintf(stderr, "Exiting!\n");
-            exit(EXIT_FAILURE);
-        }
-        cpu_state->PC.X += WORD_SIZE_BYTES;
-    }
-
-    if (CHECK_BITS(op0, OP0_LS_MASK, OP0_LS_VALUE)) {
-        uint8_t sf = SELECT_BITS(instruction, DT_SF_OFFSET, DT_SF_SIZE);
-
-        uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
-        if (CHECK_BITS(opcode, SDT_MASK, SDT_VALUE)) {
-            if (sf == SF_32) {
-                execute_sdt_32(cpu_state, instruction);
-            } else {
-                execute_sdt_64(cpu_state, instruction);
-            }
-        }
-        if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
-            if (sf == SF_32) {
-                execute_load_literal_32(cpu_state, instruction);
-            } else {
-                execute_load_literal_64(cpu_state, instruction);
-            }
-
-        }
-        cpu_state->PC.X += WORD_SIZE_BYTES;
-    }
-
-    if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
-        branch_instruction(cpu_state, instruction);
-    }
-
-    return true;
 }
 
 uint32_t get_register_value_32(state_t *cpu_state, uint8_t reg_num) {
@@ -231,6 +177,102 @@ void set_register_value_64(state_t *cpu_state, uint8_t reg_num, uint64_t value) 
     cpu_state->R[reg_num].X = value;
 }
 
+uint64_t get_register_value(state_t *cpu_state, uint8_t reg_num, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (reg_num == ZR_REG) {
+        return 0;
+    }
+    if (sf == SF_32) {
+        return cpu_state->R[reg_num].W;
+    }
+    else {
+        return cpu_state->R[reg_num].X;
+    }
+}
+
+void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (reg_num == ZR_REG) {
+        return;
+    }
+    if (sf == SF_32) {
+        cpu_state->R[reg_num].W = (uint32_t) value;
+        cpu_state->R[reg_num].X &= 0x00000000FFFFFFFF;
+    }
+    else {
+        cpu_state->R[reg_num].X = value;
+    }
+}
+
+void output_result(state_t *cpu_state, FILE *fp) {
+    fprintf(fp, "Registers:\n");
+    for (int i = 0; i < 31; i++) {
+        fprintf(fp, "X%02d    = %016lx\n", i, cpu_state->R[i].X);
+    }
+    fprintf(fp, "PC     = %016lx\n", cpu_state->PC.X);
+    char n_flag = cpu_state->PSTATE.N ? 'N' : '-';
+    char z_flag = cpu_state->PSTATE.Z ? 'Z' : '-';
+    char c_flag = cpu_state->PSTATE.C ? 'C' : '-';
+    char v_flag = cpu_state->PSTATE.V ? 'V' : '-';
+    fprintf(fp, "PSTATE : %c%c%c%c\n", n_flag, z_flag, c_flag, v_flag);
+
+    fprintf(fp, "Non-Zero Memory:\n");
+    for (uint64_t addr = 0; addr < MEMORY_CAPACITY; addr += WORD_SIZE_BYTES) {
+        uint32_t word = fetch_word_32(addr);
+        if (word) {
+            fprintf(fp, "0x%08lx : %08x\n", addr, word);
+        }
+    }
+}
+
+/**
+ * Return value is true iff the program is to continue running
+*/
+bool emulate_cycle(state_t *cpu_state) {
+    // Fetch
+    uint32_t instruction = fetch_word_32(cpu_state->PC.X);
+
+    // Decode and execute
+    uint8_t op0 = SELECT_BITS(instruction, OP0_OFFSET, OP0_SIZE);
+
+    if (instruction == NOP_INSTRUCTION) {
+        cpu_state->PC.X += WORD_SIZE_BYTES;
+        return true;
+    }
+
+    if (instruction == HALT_INSTRUCTION) {
+        return false;
+    }
+
+    if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
+        execute_dpimm_instruction(cpu_state, instruction);
+        cpu_state->PC.X += WORD_SIZE_BYTES;
+    }
+
+    if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
+        execute_dpreg_instruction(cpu_state, instruction);
+        cpu_state->PC.X += WORD_SIZE_BYTES;
+    }
+
+    if (CHECK_BITS(op0, OP0_LS_MASK, OP0_LS_VALUE)) {
+        uint8_t sf = SELECT_BITS(instruction, DT_SF_OFFSET, DT_SF_SIZE);
+
+        uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
+        if (CHECK_BITS(opcode, SDT_MASK, SDT_VALUE)) {
+            execute_sdt(cpu_state, instruction, sf);
+        }
+        if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
+            execute_load_literal(cpu_state, instruction, sf);
+        }
+        cpu_state->PC.X += WORD_SIZE_BYTES;
+    }
+
+    if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
+        branch_instruction(cpu_state, instruction);
+    }
+
+    return true;
+}
 
 int main(int argc, char **argv) {
     FILE *output_fp;
