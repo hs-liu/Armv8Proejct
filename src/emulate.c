@@ -77,7 +77,7 @@ void load_bin_to_memory(char *file_name) {
     fread(main_memory, sizeof(char), MEMORY_CAPACITY, fp);
 }
 
-uint32_t fetch_word(uint64_t address) {
+uint32_t fetch_word_32(uint64_t address) {
     if (address >= MEMORY_CAPACITY) {
         fprintf(stderr, "Illegal state: attempted to fetch beyond memory bounds\n");
         fprintf(stderr, "Exiting!\n");
@@ -87,7 +87,7 @@ uint32_t fetch_word(uint64_t address) {
     return *(uint32_t *) &main_memory[address];
 }
 
-void write_word(uint64_t address, uint32_t word) {
+void write_word_32(uint64_t address, uint32_t word) {
     if (address >= MEMORY_CAPACITY) {
         fprintf(stderr, "Illegal state: attempted to write beyond memory bounds\n");
         fprintf(stderr, "Exiting!\n");
@@ -187,7 +187,7 @@ void output_result(state_t *cpu_state, FILE *fp) {
 
     fprintf(fp, "Non-Zero Memory:\n");
     for (uint64_t addr = 0; addr < MEMORY_CAPACITY; addr += WORD_SIZE_BYTES) {
-        uint32_t word = fetch_word(addr);
+        uint32_t word = fetch_word_32(addr);
         if (word) {
             fprintf(fp, "0x%08lx : %08x\n", addr, word);
         }
@@ -199,7 +199,7 @@ void output_result(state_t *cpu_state, FILE *fp) {
 */
 bool emulate_cycle(state_t *cpu_state) {
     // Fetch
-    uint32_t instruction = fetch_word(cpu_state->PC.X);
+    uint32_t instruction = fetch_word_32(cpu_state->PC.X);
 
     // Decode and execute
     uint8_t op0 = SELECT_BITS(instruction, OP0_OFFSET, OP0_SIZE);

@@ -12,10 +12,10 @@ void sdt_uimm_32(state_t *cpu_state, uint64_t imm12, uint8_t xn, uint8_t rt, uin
   uint64_t xn_value = get_register_value_64(cpu_state, xn);
   uint32_t rt_value = get_register_value_32(cpu_state, rt);
   if (l == LOAD_L) {
-    set_register_value_32(cpu_state, rt, fetch_word(xn_value + imm12));
+    set_register_value_32(cpu_state, rt, fetch_word_32(xn_value + imm12));
   }
   else if (l == STORE_L) {
-    write_word(xn_value + imm12, rt_value);
+    write_word_32(xn_value + imm12, rt_value);
   }
 }
 
@@ -38,10 +38,10 @@ void sdt_regoffset_32(state_t *cpu_state, uint8_t xm, uint8_t xn, uint8_t rt, ui
   uint64_t xm_value = get_register_value_64(cpu_state, xm);
   uint32_t rt_value = get_register_value_32(cpu_state, rt);
   if (l == LOAD_L) {
-    set_register_value_32(cpu_state, rt, fetch_word(xn_value + xm_value));
+    set_register_value_32(cpu_state, rt, fetch_word_32(xn_value + xm_value));
   }
   else if (l == STORE_L) {
-    write_word(xn_value + xm_value, rt_value);
+    write_word_32(xn_value + xm_value, rt_value);
   }
 }
 
@@ -64,10 +64,10 @@ void sdt_preind_32(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, ui
   uint32_t rt_value = get_register_value_32(cpu_state, rt);
   set_register_value_64(cpu_state, xn, xn_value);
   if (l == LOAD_L) {
-    set_register_value_32(cpu_state, rt, fetch_word(xn_value));
+    set_register_value_32(cpu_state, rt, fetch_word_32(xn_value));
   }
   else if (l == STORE_L) {
-    write_word(xn_value, rt_value);
+    write_word_32(xn_value, rt_value);
   }
 }
 
@@ -89,10 +89,10 @@ void sdt_postind_32(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, u
   uint64_t xn_value = get_register_value_64(cpu_state, xn);
   uint32_t rt_value = get_register_value_32(cpu_state, rt);
   if (l == LOAD_L) {
-    set_register_value_32(cpu_state, rt, fetch_word(xn_value));
+    set_register_value_32(cpu_state, rt, fetch_word_32(xn_value));
   }
   else if (l == STORE_L) {
-    write_word(xn_value, rt_value);
+    write_word_32(xn_value, rt_value);
   }
   set_register_value_64(cpu_state, xn, xn_value + simm9);
 }
