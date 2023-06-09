@@ -171,6 +171,7 @@ uint64_t get_register_value_64(state_t *cpu_state, uint8_t reg_num) {
 }
 
 void set_register_value_64(state_t *cpu_state, uint8_t reg_num, uint64_t value) {
+    printf("HIIIIII  %llx\n", value);
     if (reg_num == ZR_REG) {
         return;
     }
@@ -192,11 +193,12 @@ uint64_t get_register_value(state_t *cpu_state, uint8_t reg_num, uint8_t sf) {
 
 void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
+    printf("HIIIIII  %llx\n", value);
     if (reg_num == ZR_REG) {
         return;
     }
     if (sf == SF_32) {
-        cpu_state->R[reg_num].W = value;
+        cpu_state->R[reg_num].W = (uint32_t) value;
         cpu_state->R[reg_num].X &= 0x00000000FFFFFFFF;
     }
     else {
@@ -277,19 +279,15 @@ bool emulate_cycle(state_t *cpu_state) {
 
         uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
         if (CHECK_BITS(opcode, SDT_MASK, SDT_VALUE)) {
-            if (sf == SF_32) {
-                execute_sdt_32(cpu_state, instruction);
-            } else {
-                execute_sdt_64(cpu_state, instruction);
-            }
+            execute_sdt(cpu_state, instruction, sf);
+            // if (sf == SF_32) {
+            //     execute_sdt_32(cpu_state, instruction);
+            // } else {
+            //     execute_sdt_64(cpu_state, instruction);
+            // }
         }
         if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
-            if (sf == SF_32) {
-                execute_load_literal_32(cpu_state, instruction);
-            } else {
-                execute_load_literal_64(cpu_state, instruction);
-            }
-
+            execute_load_literal(cpu_state, instruction, sf);
         }
         cpu_state->PC.X += WORD_SIZE_BYTES;
     }
