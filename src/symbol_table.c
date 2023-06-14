@@ -42,8 +42,15 @@ void hashmap_set(hashmap_t *map, char *key, uint64_t value) {
     }
     int index = hash(key, strlen(key));
     hashmap_entry_t *new_entry = malloc(sizeof(hashmap_entry_t));
-    new_entry->key = key;
+    char *new_key = strdup(key);
+    if (new_key == NULL) {
+        fprintf(stderr, "Could not allocate memory in heap!\n");
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+    new_entry->key = new_key;
     new_entry->value = value;
+    new_entry->next = NULL;
 
     if (entry == NULL) {
         map->entries[index] = new_entry;
@@ -61,6 +68,7 @@ void hashmap_free(hashmap_t *map) {
         hashmap_entry_t *entry = map->entries[i];
         while (entry != NULL) {
             hashmap_entry_t *next = entry->next;
+            free(entry->key);
             free(entry);
             entry = next;
         }

@@ -92,7 +92,6 @@ void read_file(char *in_file, process_line_fn process_line, void *data) {
   }
 }
 
-// TODO: Implement assemble() function
 int main(int argc, char **argv) {
   if (argc != 3) {
     printf("Usage: ./assemble <file_in> <file_out>\n");
@@ -105,8 +104,6 @@ int main(int argc, char **argv) {
   };
 
   read_file(argv[1], build_symbol_table, &state);
-
-  printf("hashmap_get(state.symbol_table, main) = %llx", hashmap_find_entry(state.symbol_table, "main")->value);
 
   // char *in_file = argv[1];
   // char *out_file = argv[2];
