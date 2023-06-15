@@ -37,7 +37,7 @@ const char *special[] = {
   ".int", "nop",
 };
 
-typedef void (*process_line_fn)(char *line, int len, void *data);
+typedef void (*process_line_fn)(char *line, void *data);
 
 typedef struct {
   uint64_t address;
@@ -51,6 +51,28 @@ typedef struct {
 
 // Instruction assembler
 
+
+// Strip line of trailing and leading whitespace
+// returns resulting length of the line in second argument
+char *strip_line(char *line, int *res_len) {
+  int len = strlen(line);
+  
+  // Skip leading whitespace
+  while (len > 0 && isspace(line[0])) {
+    line++;
+    len--;
+  }
+  // Skip trailing whitespace
+  while (len > 0 && isspace(line[len - 1])) {
+    len--;
+    line[len] = '\0';
+  }
+
+  if (res_len != NULL) {
+    *res_len = len;
+  }
+  return line;
+}
 
 
 // Check if the string (may not be null terminated) is a symbol
@@ -75,13 +97,11 @@ static inline bool is_symbol_declaration(char *line, int len) {
 
 // Building symbol table
 // Line should be null terminated and should not have a trailing newline
-void build_symbol_table(char *line, int len, void *data) {
+void build_symbol_table(char *line, void *data) {
   assembler_state_t *state = (assembler_state_t *)data;
-  // Skip leading whitespace
-  while (*line == ' ' || *line == '\t') {
-    line++;
-    len--;
-  }
+  int len;
+  line = strip_line(line, &len);
+
   // Skip empty lines
   if (*line == '\0') {
     return;
@@ -136,13 +156,11 @@ bool is_special_instruction(char *opcode) {
   return false;
 }
 
-void build_memory(char *line, int len, void *data) {
+void build_memory(char *line, void *data) {
   assembler_state_t *state = (assembler_state_t *)data;
-  // Skip leading whitespace
-  while (*line == ' ' || *line == '\t') {
-    line++;
-    len--;
-  }
+  int len;
+  line = strip_line(line, &len);
+
   // Skip empty lines
   if (*line == '\0') {
     return;
@@ -176,7 +194,7 @@ void read_file(FILE *fp_in, process_line_fn process_line, void *data) {
       exit(EXIT_FAILURE);
     }
     buffer[len - 1] = '\0';
-    process_line(buffer, len - 1, data);
+    process_line(buffer, data);
   }
 }
 
