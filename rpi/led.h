@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
 
 #define SELECT_BITS(value, offset, size) (((value) >> (offset)) & ((1ll << (size)) - 1))
 #define CHECK_BITS(value, mask, target_value) (((value) & (mask)) == (target_value))
@@ -18,3 +15,8 @@ typedef struct {
     uint8_t E: 1;
     uint8_t F: 1;
 } mail_status_t;
+
+typedef struct {
+    mailbox_message_t mails[10];
+    uint16_t len;
+} mail_queue;
