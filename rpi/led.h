@@ -33,7 +33,7 @@ typedef struct {
 } mail_status_t;
 
 typedef struct {
-    mailbox_message_t mails[MAX_MESSAGES];
+    mailbox_message_t mails[MAX_MESSAGES]; // from spec: ignored/not used for responses
     uint16_t len;
 } mail_queue_t;
 
@@ -52,4 +52,5 @@ typedef struct {
     uint32_t end;
 } req_res_buffer_t;
 
-void mailbox_sent(mail_queue_t *requests, mailbox_message_t mag);
+extern void mailbox_send(mail_queue_t *requests, mail_queue_t *responses, mailbox_message_t msg);
+extern mailbox_message_t mailbox_read(mail_queue_t *requests, mail_queue_t *responses);

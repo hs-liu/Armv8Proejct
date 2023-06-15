@@ -13,16 +13,20 @@ static int check_full(mail_queue_t *queue) {
     }
 }
 
-mailbox_message_t mailbox_read(mail_queue_t *responses) {
+mailbox_message_t mailbox_read(mail_queue_t *requests, mail_queue_t *responses) {
     mail_status_t status;
     mailbox_message_t resp;
+
+    requests->len--;
+    responses->len++;
+    // TODO: remove from request queue
 
     do {
         status = *MAILBOX_STATUS;
     } while (status.E);
 
     resp = *MAILBOX_READ;
-    responses->len++;
+    responses->len--;
     responses->mails[responses->len] = resp;
     return resp;
 }
@@ -35,8 +39,9 @@ void mailbox_send(mail_queue_t *requests, mail_queue_t *responses, mailbox_messa
     } while (status.F);
 
     if (!check_full(responses)) {
+        // write message to write_reg
         *MAILBOX_WRITE = msg;
-        requests->len--;
+        requests->len++;
         // call queue function to move every elem forward OR move pointer for circular
     }
     // ignore this request if response queue is full
