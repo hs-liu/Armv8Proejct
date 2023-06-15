@@ -11,7 +11,7 @@ all: assemble emulate
 
 assemble: assemble.o utils.o symbol_table.o assemble_dt.o
 emulate: emulate.o branch.o dp_reg.o dp_imm.o data_trans.o
-test: test.o symbol_table.o
+test: test.o utils.o symbol_table.o assemble_dt.o
 
 clean:
 	$(RM) *.o assemble emulate
