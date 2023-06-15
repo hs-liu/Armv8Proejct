@@ -17,7 +17,6 @@
 #define MAILBOX_WRITE ((mailbox_message_t *)(BASE_ADDRESS+WRITE_OFFSET))
 #define MAILBOX_STATUS ((mailbox_message_t *)(BASE_ADDRESS+STATUS_OFFSET))
 
-#define END_TAG 0x00000000
 #define LED_ON 0x00000001
 #define LED_OFF 0x00000000
 
@@ -50,7 +49,7 @@ typedef struct {
     uint32_t id;
     uint32_t size;
     msg_tag_t tag[NUM_OF_TAGS];
-    uint32_t end = END_TAG;
+    uint32_t end;
 } req_res_buffer_t;
 
 void mailbox_sent(mail_queue *requests, mailbox_message_t mag);
