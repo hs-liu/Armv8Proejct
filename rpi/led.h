@@ -4,6 +4,7 @@
 #define SIGN_EXT(value, in_size, out_size) ((value) << ((out_size) - (in_size)) >> ((out_size) - (in_size)))
 
 #define LED_CHANNEL 8
+#define NUM_OF_TAGS 1 //based on spec
 #define MAX_MESSAGES 10
 #define BASE_ADDRESS 0x3f000000
 #define READ_OFFSET 0x00
@@ -16,6 +17,9 @@
 #define MAILBOX_WRITE ((mailbox_message_t *)(BASE_ADDRESS+WRITE_OFFSET))
 #define MAILBOX_STATUS ((mailbox_message_t *)(BASE_ADDRESS+STATUS_OFFSET))
 
+#define END_TAG 0x00000000
+#define LED_ON 0x00000001
+#define LED_OFF 0x00000000
 
 
 typedef struct {
@@ -32,6 +36,21 @@ typedef struct {
 typedef struct {
     mailbox_message_t mails[MAX_MESSAGES];
     uint16_t len;
-} mail_queue;
+} mail_queue_t;
+
+typedef struct {
+    uint32_t id;
+    uint32_t size;
+    uint32_t code;
+    uint32_t pin;
+    uint32_t state;
+} msg_tag_t;
+
+typedef struct {
+    uint32_t id;
+    uint32_t size;
+    msg_tag_t tag[NUM_OF_TAGS];
+    uint32_t end = END_TAG;
+} req_res_buffer_t;
 
 void mailbox_sent(mail_queue *requests, mailbox_message_t mag);
