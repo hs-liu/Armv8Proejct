@@ -1,30 +1,113 @@
-\documentclass[11pt]{article}
+\documentclass{article}
 
-\usepackage{fullpage}
+\usepackage{geometry} % Adjust page layout
+\usepackage{graphicx} % Required for inserting images
+%\usepackage{showframe} % temp: show margins for page to see what we are adjusting
+\usepackage{hyperref}
+\usepackage{titlesec} %adjust the font size of title
+\usepackage{xcolor}
+
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+
+\urlstyle{same}
+
+\setlength\parindent{0pt}
+\setlength{\parskip}{8pt}
+
+\geometry{
+    % set page layout
+    a4paper,
+    total={170mm,257mm},
+    left=19mm,
+    right=19mm,
+    top=20mm,
+}
+
+\title{C Project Interim Checkpoint Report}
+\titleformat*{\section}{\large\bfseries}
+\author{hl2622, jhl21, syl121, yz8922}
+\date{June 2023}
 
 \begin{document}
 
-\title{ARM Checkpoint... }
-\author{TODO}
+    \maketitle
+    \section{Workload Assignment and Coordination}
+    To efficiently tackle the project, we held our first group meeting on 30th May to discuss and break Part I into different tasks with a modular approach. During the meeting, we collectively decided upon and wrote the code for important structures and variables %that had to be used by different parts of the emulator program 
+    (e.g. the structure to keep track of the CPU register states, and the main memory as a global array variable). 
+    
+    %We broke the tasks down into different groups of functions based on the subsections in the specification document.
+    We then assigned tasks to each member and set initial mock deadlines. During the first mentor meeting on 2nd June, we discussed our progress and adjusted deadlines. %based on how achievable they seemed. 
+    We also redistributed the assigned workload among members %, shifting some of the assigned functions to be implemented from jhl21 to syl121
+    due to possible opportunities for abstracting similarities between functions. Final task allocation is as follows: 
+    \begin{itemize}
+        \item \texttt{jhl21}: Decoder, Output of Processor States,  Special Instructions (NOP and HALT). Was also in charge of keeping the code style uniform throughout the project.
+        \item \texttt{syl121}: Implementation of Data Processing Instruction(registers), Implementation of Data Processing Instruction(Immediate) and Bitwise Shifts.
+        \item \texttt{yz8922}: Implementation of Single Data Transfer Instructions.
+        \item \texttt{hl2622}: Implementation of Branch Instructions.
+    \end{itemize}
+    We used the "topic branches" git branching workflow as described in the \href{https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows}{\blue{git book}} to collaborate on the project. Each of us worked on a different branch when implementing different features. We then used the gitlab merge request feature to merge it into the master branch, which provided the opportunity for other members to look through, approve, and give feedback. We also constantly kept each other updated by sharing our progress in our Telegram group chat. Additionally, we also met offline for code quality checks and refactoring to ensure that the code style is uniform throughout.
+    
+    \section{Group Performance and Future Improvements}
+    Overall, we believed that our team worked very well together. We were able to progress smoothly towards the completion of Part I with our emulator passing all test cases and all team members being satisfied with the final quality of code.
+    
+    We believe that it was the adjustment of deadlines and reallocation of responsibilities %which happened during the second group meeting, 
+    that made the completion more achievable and workload be more manageable by all members. %allowed the new deadlines to be more achievable and the new allocation of work to be more manageable by all members. 
+    By having already spent two days working on the initial work allocation, we were more familiar with our tasks %what had to be done 
+    and had a better sense of how quickly it could be %realistically 
+    done.
+    
+    Communication within the team was also very effective. We encouraged members to share any doubts they had, and be transparent if they needed more time %to meet deadlines 
+    or help when implementing the emulator. It also helped that the whole team was quick to respond to any issues brought up.
+    % One example of this would be team members asking in the group whether to use nested if statements or guard clauses, which helped standardize the overall code style in the emulator code. 
+    Everyone proactively contributed, and leveraged their strengths to complete the project. Together with everyone's effort, we finished building the emulator ahead of the official deadline and passed all the tests, which gave us time to refactor the code and check for any edge cases that we missed out.
+    
+    One area to improve in the future would be the assignment of workloads to each member. As some of our team members were new to the C language when the project was released, other members had to take on a greater share of work given the difference in our skill levels, especially for testing and code refactoring. However, the current unbalanced share of workload can be resolved for the following parts of the project as our C programming skills have improved while working and with the ongoing C lectures. 
 
-\maketitle
+    \section{Emulator Structure and Reusable Components}
+    We designed the emulator to have a modular structure, which allowed us to identify components that can be reused for the assembler. We split the emulator code up into modules, each comprising of a header file and a source file. The former contained the defined constants, macros, structures, enumerations, and the function prototypes, while the later contained the function definitions. The emulator was broken up into the following modules:
+    \begin{itemize}
+        \item \texttt{emulator.c / emulator.h}: defined the major components of the emulator such as memory, registers, and flags, and implemented major processes such as the binary file loader, AArch64 pipeline phases simulation, instruction selection and termination. It also contains all the constants and data structures used in other files. 
+        \item  \texttt{dp\_reg.c / dp\_reg.h}: contains data processing operations between only registers.
+        \item \texttt{dp\_imm.c / dp\_imm.h}: contains data processing operations between registers and an immediate value.
+        \item \texttt{branch.c / branch.h}: contains branching instructions.
+        \item \texttt{data\_trans.c / data\_trans.h }: contains instructions that read or write from/to memory.
+    \end{itemize}
+    % We defined the major components of the emulator such as memory, registers, and flags, and implemented major processes such as the binary file loader, AArch64 pipeline phases simulation, instruction selection and termination on the main file: emulate.c together with the header file: emulate.h, in which we defined all the constants and data structures. 
+    
+    %Following this, we implemented specific instructions according to the spec given: there is a separate C file for each instruction.
+    % (the only exception is special instructions as we think it is more convenient to include them in the main file)
+    Additionally, as some instructions have two modes: 64 bits(Xn) and 32 bits(Wn), we passed it as a variable(sf) in our functions, thereby reducing code duplication. Eventually, all instruction functions that were implemented in separate source files were called in emulate.c to obtained updated flag and register states.
+    %By implementing instructions as functions in their respective files, we were able to encapsulate each type of instruction and make progress by working on different files simultaneously. These instruction functions are then called by emulate.c under the emulate cycle function to obtain updated flag and register states.
+    
+    We believe that our current design can be reused in several ways. Firstly, the offset constants and offset values defined in the header files could be reused in the assembler to convert A64 instructions into a binary code. Secondly, the functions defined in our emulator can be used for testing for our assembler.
+    % \begin{itemize}
+    %     \item The offset constants and offset values defined in the header files can be reused in our assembler
+    %     \item The functions defined in our emulator can be used for testing in our assembler
+    % \end{itemize}
+    \section{Implementation Challenges and Mitigation Strategies}
 
-\section{Group Organisation}
+    %There are several challenges we envision in our implementation of the assembler:
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+    \textbf{Label Handling: }In the assembler implementation, one of the future challenges we anticipate is the need to keep track of the assignment of addresses to labels, which arises from the requirement to resolve labels and assign appropriate memory addresses during the assembly process.
 
-\section{Implementation Strategies}
+     \textbf{Possible mitigation strategy: }We can employ strategies such as implementing a symbol table to store label-address mappings, adopting a pass-based approach to resolve labels and assign addresses, handling forward references using techniques like backpatching, and implementing robust error reporting mechanisms to ensure accurate label resolution, consistent address assignments, and prompt identification of any issues related to label assignments during the assembly process.
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+    
 
+     During the course of the project, we encountered various implementation challenges and devised effective mitigation strategies to overcome them:
+    
+
+    \textbf{Code duplication:} During the implementation of the functions, our team recognized the requirement to rewrite code in various instances for both 32-bit and 64-bit architectures. To address this, we adopted strategies such as function abstraction, where we broke down common functionalities into smaller, reusable functions. Additionally, we utilized header files to define macros and constants, promoting code reuse and enhancing maintainability. These approaches helped minimize code duplication and improve the overall efficiency of our implementation.
+
+   % \textbf{Code Merging:}
+   
+   %   To address the challenges of collaboration and code merging, we implemented a file-based work allocation strategy. By assigning team members to work on different files, we minimised the potential for conflicting changes and maintained focused development. This approach streamlined the code merging process, allowing for efficient integration of individual contributions from separate files.
+
+    \textbf{Testing:} Due to the unavailability of the complete emulator, testing our functions posed a challenge as the given test required almost the entire emulator to be completed. To overcome this, we devised our own testing methods and implemented defensive programming techniques. By incorporating assertions at each step, we ensured that our code was thoroughly tested, preventing the accumulation of errors from the early stages and facilitating easier debugging in the future.
+
+
+    
+    
+    \bigskip
+    
 \end{document}
