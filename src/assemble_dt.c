@@ -241,7 +241,6 @@ void handle_offset_addressing(
 
 // Assemble a Load / Store instrucution
 void assemble_load_store_instruction(char *opcode, char *line, assembler_state_t *state) {
-  if (strcmp(opcode, "ldr") == 0) {
     char *rt_str = strtok(NULL, ",");
     char *address_str = strtok(NULL, "]");
     rt_str = strip_line(rt_str, NULL);
@@ -265,17 +264,17 @@ void assemble_load_store_instruction(char *opcode, char *line, assembler_state_t
         next_token = strip_line(next_token, NULL);
     }
 
-    if (is_load_literal_instruction(address_str, address_str_len)) {
+    if (strcmp(opcode, "ldr") == 0 && is_load_literal_instruction(address_str, address_str_len)) {
         assemble_load_literal_instruction(address_str, &instruction, state);
     }
     else {
         // Single Data Transfer instruction
-        SET_BITS(instruction, SDT_L_OFFSET, SDT_L_SIZE, LOAD_L);
+        uint8_t l = strcmp(opcode, "ldr") == 0 ? LOAD_L : STORE_L;
+        SET_BITS(instruction, SDT_L_OFFSET, SDT_L_SIZE, l);
         if (is_pre_index_addressing(next_token)) {
             assemble_pre_index_addressing_instruction(address_str, &instruction, state);
         }
         else if (is_post_index_addressing(next_token)) {
-            SET_BITS(instruction, SDT_L_OFFSET, SDT_L_SIZE, LOAD_L);
             assemble_post_index_addressing_instruction(address_str, next_token, &instruction, state);
         }
         else {
@@ -285,6 +284,4 @@ void assemble_load_store_instruction(char *opcode, char *line, assembler_state_t
 
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
     state->address += WORD_SIZE_BYTES;
-  }
 }
-
