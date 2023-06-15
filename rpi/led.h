@@ -4,6 +4,7 @@
 #define SIGN_EXT(value, in_size, out_size) ((value) << ((out_size) - (in_size)) >> ((out_size) - (in_size)))
 
 #define LED_CHANNEL 8
+#define MAX_MESSAGES 10
 #define BASE_ADDRESS 0x3f000000
 #define READ_OFFSET 0x00
 #define WRITE_OFFSET 0x20
@@ -29,7 +30,7 @@ typedef struct {
 } mail_status_t;
 
 typedef struct {
-    mailbox_message_t mails[10];
+    mailbox_message_t mails[MAX_MESSAGES];
     uint16_t len;
 } mail_queue;
 
