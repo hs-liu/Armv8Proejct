@@ -22,6 +22,18 @@ bool is_post_index_addressing(char *next_token) {
     return next_token != NULL && next_token[0] == '#';
 }
 
+bool is_register_offset_addressing(char *offset_str) {
+    return offset_str != NULL && offset_str[0] == 'x';
+}
+
+bool is_unsigned_offset_addressing(char *offset_str) {
+    return offset_str != NULL && offset_str[0] == '#';
+}
+
+bool is_zero_unsigned_offset(char *offset_str) {
+    return offset_str == NULL;
+}
+
 void assemble_load_literal_instruction(char *address_str, uint32_t *instruction, assembler_state_t *state) {
     uint64_t transfer_address = 0;
     if (address_str[0] == '#') {
@@ -125,6 +137,108 @@ void assemble_post_index_addressing_instruction(
     SET_BITS(*instruction, PRE_POST_SIMM9_OFFSET, PRE_POST_SIMM9_SIZE, simm);
 }
 
+void assemble_register_offset_addressing_instruction(
+    char *xn_str,
+    char *xm_str,
+    uint32_t *instruction,
+    assembler_state_t *state
+) {
+    SET_BITS(*instruction, ENCODING_OFFSET, ENCODING_SIZE, REG_OFFSET_ENCODING);
+    uint8_t sf = SF_64;
+    uint8_t xn = get_register(xn_str, &sf);
+    if (sf != SF_64) {
+        fprintf(stderr, "Invalid index register: %s\n", xn_str);
+        fprintf(stderr, "Address register must be an X register!");
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+    SET_BITS(*instruction, XN_OFFSET, XN_SIZE, xn);
+
+    uint8_t xm = get_register(xm_str, &sf);
+    if (sf != SF_64) {
+        fprintf(stderr, "Invalid offset register: %s\n", xm_str);
+        fprintf(stderr, "Offset register must be an X register!");
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+    SET_BITS(*instruction, XM_OFFSET, XM_SIZE, xm);
+}
+
+void assemble_unsigned_offset_addressing_instruction(
+    char *xn_str,
+    char *offset_str,
+    uint8_t rt_sf,
+    uint32_t *instruction,
+    assembler_state_t *state
+) {
+    SET_BITS(*instruction, ENCODING_OFFSET, ENCODING_SIZE, SDT_UNSIGNED_OFFSET_ENCODING);
+    SET_BITS(*instruction, SDT_U_OFFSET, SDT_U_SIZE, SDT_UNSIGNED_OFFSET_U);
+    uint8_t sf = SF_64;
+    uint8_t xn = get_register(xn_str, &sf);
+    if (sf != SF_64) {
+        fprintf(stderr, "Invalid index register: %s\n", xn_str);
+        fprintf(stderr, "Address register must be an X register!");
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+    SET_BITS(*instruction, XN_OFFSET, XN_SIZE, xn);
+
+    assert(offset_str[0] == '#');
+    uint64_t offset = strtoll(offset_str + 1, NULL, 0);
+    if (rt_sf == SF_64) {
+        if (offset % BYTES_IN_64 != 0) {
+            fprintf(stderr, "Immediate '%s' is not a multiple of 8!\n", offset_str);
+            fprintf(stderr, "Exiting!\n");
+            exit(EXIT_FAILURE);
+        }
+        offset /= BYTES_IN_64;
+    } else if (rt_sf == SF_32) {
+        if (offset % BYTES_IN_32 != 0) {
+            fprintf(stderr, "Immediate '%s' is not a multiple of 4!\n", offset_str);
+            fprintf(stderr, "Exiting!\n");
+            exit(EXIT_FAILURE);
+        }
+        offset /= BYTES_IN_32;
+    }   
+
+    if (offset > MAX_UIMM12) {
+        fprintf(stderr, "Immediate '%s' is not a valid 12-bit unsigned immediate!\n", offset_str);
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    SET_BITS(*instruction, SDT_IMM12_OFFSET , SDT_IMM12_SIZE, offset);
+}
+
+void handle_offset_addressing(
+    char *address_str,
+    uint8_t rt_sf,
+    uint32_t *instruction,
+    assembler_state_t *state
+) {
+    if (address_str[0] != '[') {
+        fprintf(stderr, "Invalid address: %s\n", address_str);
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *xn_str = strtok(address_str + 1, ",");
+    char *offset_str = strtok(NULL, "]");
+    if (offset_str != NULL) {
+        offset_str = strip_line(offset_str, NULL);
+    }
+
+    if (is_register_offset_addressing(offset_str)) {
+        assemble_register_offset_addressing_instruction(xn_str, offset_str, instruction, state);
+    }
+    else if (is_unsigned_offset_addressing(offset_str)) {
+        assemble_unsigned_offset_addressing_instruction(xn_str, offset_str, rt_sf, instruction, state);
+    }
+    else if (is_zero_unsigned_offset(offset_str)) {
+        assemble_unsigned_offset_addressing_instruction(xn_str, "#0", rt_sf, instruction, state);
+    }
+}
+
 // Assemble a Load / Store instrucution
 void assemble_load_store_instruction(char *opcode, char *line, assembler_state_t *state) {
   if (strcmp(opcode, "ldr") == 0) {
@@ -154,17 +268,23 @@ void assemble_load_store_instruction(char *opcode, char *line, assembler_state_t
     if (is_load_literal_instruction(address_str, address_str_len)) {
         assemble_load_literal_instruction(address_str, &instruction, state);
     }
-    else if (is_pre_index_addressing(next_token)) {
+    else {
+        // Single Data Transfer instruction
         SET_BITS(instruction, SDT_L_OFFSET, SDT_L_SIZE, LOAD_L);
-        assemble_pre_index_addressing_instruction(address_str, &instruction, state);
-    }
-    else if (is_post_index_addressing(next_token)) {
-        SET_BITS(instruction, SDT_L_OFFSET, SDT_L_SIZE, LOAD_L);
-        assemble_post_index_addressing_instruction(address_str, next_token, &instruction, state);
-
+        if (is_pre_index_addressing(next_token)) {
+            assemble_pre_index_addressing_instruction(address_str, &instruction, state);
+        }
+        else if (is_post_index_addressing(next_token)) {
+            SET_BITS(instruction, SDT_L_OFFSET, SDT_L_SIZE, LOAD_L);
+            assemble_post_index_addressing_instruction(address_str, next_token, &instruction, state);
+        }
+        else {
+            handle_offset_addressing(address_str, sf, &instruction, state);
+        }
     }
 
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
+    state->address += WORD_SIZE_BYTES;
   }
 }
 

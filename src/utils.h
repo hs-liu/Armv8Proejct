@@ -53,6 +53,8 @@
 #define SDT_U_OFFSET 24
 #define SDT_U_SIZE 1
 
+#define SDT_UNSIGNED_OFFSET_U 1
+
 #define SDT_OFFSET_OFFSET 10
 #define SDT_OFFSET_SIZE 12
 
@@ -61,8 +63,14 @@
 #define LOAD_L 1
 #define STORE_L 0
 
+#define SDT_UNSIGNED_OFFSET_ENCODING 0xb8000000
+
 #define SDT_IMM12_OFFSET 10
 #define SDT_IMM12_SIZE 12
+
+#define MAX_UIMM12 ((1 << 12) - 1)
+
+#define REG_OFFSET_ENCODING 0xb8206800
 
 #define REG_OFFSET_MASK 0x83F
 #define REG_OFFSET_VALUE 0x81A
