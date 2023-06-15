@@ -9,7 +9,7 @@ CFLAGS  ?= -std=c17 -g\
 
 all: assemble emulate
 
-assemble: assemble.o utils.o symbol_table.o assemble_dt.o
+assemble: assemble.o utils.o symbol_table.o assemble_dt.o assemble_branch.o
 emulate: emulate.o branch.o dp_reg.o dp_imm.o data_trans.o
 test: test.o utils.o symbol_table.o assemble_dt.o
 

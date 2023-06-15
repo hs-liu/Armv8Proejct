@@ -8,6 +8,7 @@
 
 #include "symbol_table.h"
 #include "assemble.h"
+#include "assemble_branch.h"
 #include "assemble_dt.h"
 #include "utils.h"
 
@@ -62,8 +63,10 @@ void build_memory(char *line, void *data) {
 
   printf("Opcode: %s\n", opcode);
   if (is_branch_opcode(opcode)) {
-    state->address += WORD_SIZE_BYTES;
+    assemble_branch_instruction(opcode, line, state);
   } else if (is_data_processing_opcode(opcode)) {
+    uint32_t instruction = HALT_INSTRUCTION;
+    memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
     state->address += WORD_SIZE_BYTES;
   } else if (is_load_store_opcode(opcode)) {
     assemble_load_store_instruction(opcode, line, state);
