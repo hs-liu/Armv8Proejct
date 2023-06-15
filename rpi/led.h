@@ -7,6 +7,7 @@
 #define NUM_OF_TAGS 1 //based on spec
 #define MAX_MESSAGES 10
 #define BASE_ADDRESS 0x3f000000
+#define START_OFFSET 0x80000
 #define READ_OFFSET 0x00
 #define WRITE_OFFSET 0x20
 #define STATUS_OFFSET 0x38
@@ -19,6 +20,8 @@
 
 #define LED_ON 0x00000001
 #define LED_OFF 0x00000000
+
+#define WAIT_SECONDS 3
 
 
 typedef struct {
@@ -46,8 +49,8 @@ typedef struct {
 } msg_tag_t;
 
 typedef struct {
-    uint32_t id;
     uint32_t size;
+    uint32_t code;
     msg_tag_t tag[NUM_OF_TAGS];
     uint32_t end;
 } req_res_buffer_t;
