@@ -7,6 +7,7 @@
 #include <ctype.h>
 
 #include "symbol_table.h"
+#include "utils.h"
 
 #define MAX_LINE_LENGTH 1024
 
@@ -114,7 +115,7 @@ void build_symbol_table(char *line, void *data) {
     hashmap_set(state->symbol_table, symbol, state->address);
   } else {
     // Increment address
-    state->address += 4;
+    state->address += WORD_SIZE_BYTES;
   }
 }
 
@@ -156,6 +157,26 @@ bool is_special_instruction(char *opcode) {
   return false;
 }
 
+// Assemble a special instruction
+void assemble_special_instruction(char *opcode, char *line, assembler_state_t *state) {
+  if (strcmp(opcode, ".int") == 0) {
+    // Add the integer to memory
+    char *int_str = strtok(NULL, " ");
+    if (int_str == NULL) {
+      fprintf(stderr, "Invalid line: %s\n", line);
+      fprintf(stderr, "Exiting!\n");
+      exit(EXIT_FAILURE);
+    }
+    int32_t integer = strtoll(int_str, NULL, 0);
+    memcpy(state->memory + state->address, &integer, 4);
+  } else if (strcmp(opcode, "nop") == 0) {
+    // Add a nop to memory
+    uint32_t nop = NOP_INSTRUCTION;
+    memcpy(state->memory + state->address, &nop, 4);
+  }
+  state->address += WORD_SIZE_BYTES;
+}
+
 void build_memory(char *line, void *data) {
   assembler_state_t *state = (assembler_state_t *)data;
   int len;
@@ -171,15 +192,25 @@ void build_memory(char *line, void *data) {
   }
 
   // Tokenize the line
-  char *opcode = NULL;
-  char *token = strtok(line, " ");
+  char *opcode = strtok(line, " ");
 
-  if (token != NULL) {
-    opcode = token;
-    token = strtok(NULL, " ");
+  if (opcode == NULL) {
+    fprintf(stderr, "Invalid line: %s\n", line);
+    fprintf(stderr, "Exiting!\n");
+    exit(EXIT_FAILURE);
   }
 
   printf("Opcode: %s\n", opcode);
+  if (is_branch_opcode(opcode)) {
+  } else if (is_data_processing_opcode(opcode)) {
+  } else if (is_load_store_opcode(opcode)) {
+  } else if (is_special_instruction(opcode)) {
+    assemble_special_instruction(opcode, line, state);
+  } else {
+    fprintf(stderr, "Invalid opcode: %s\n", opcode);
+    fprintf(stderr, "Exiting!\n");
+    exit(EXIT_FAILURE);
+  }
 }
 
 // Assembly file reader to read the file line by line
