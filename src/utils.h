@@ -1,6 +1,11 @@
 #define MEMORY_CAPACITY (2 * 1024 * 1024)
 #define WORD_SIZE_BYTES 4
 
+#define MB_SIZE 1024 * 1024
+
+#define ENCODING_OFFSET 0
+#define ENCODING_SIZE 32
+
 #define NOP_INSTRUCTION 0xD503201F
 #define HALT_INSTRUCTION 0x8A000000
 
@@ -71,6 +76,11 @@
 #define PRE_POST_SIMM9_OFFSET 12
 #define PRE_POST_SIMM9_SIZE 9
 
+#define MIN_SIMM9 -256
+#define MAX_SIMM9 255
+
+#define PRE_POST_ENCODING 0xb8000400
+
 #define PRE_POST_I_OFFSET 11
 #define PRE_POST_I_SIZE 1
 
@@ -118,7 +128,7 @@
 #define CHECK_BITS(value, mask, target_value) (((value) & (mask)) == (target_value)) 
 #define SIGN_EXT(value, in_size, out_size) ((value) << ((out_size) - (in_size)) >> ((out_size) - (in_size)))
 
-#define SET_BITS(target, offset, value) ((target) |= ((value) << (offset)))
+#define SET_BITS(target, offset, size, value) ((target) |= (((value) & ((1ll << (size)) - 1)) << (offset)))
 
 
 char *strip_line(char *line, int *res_len);

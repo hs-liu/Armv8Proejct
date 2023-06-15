@@ -62,7 +62,9 @@ void build_memory(char *line, void *data) {
 
   printf("Opcode: %s\n", opcode);
   if (is_branch_opcode(opcode)) {
+    state->address += WORD_SIZE_BYTES;
   } else if (is_data_processing_opcode(opcode)) {
+    state->address += WORD_SIZE_BYTES;
   } else if (is_load_store_opcode(opcode)) {
     assemble_load_store_instruction(opcode, line, state);
   } else if (is_special_instruction(opcode)) {
@@ -88,6 +90,18 @@ void read_file(FILE *fp_in, process_line_fn process_line, void *data) {
     buffer[len - 1] = '\0';
     process_line(buffer, data);
   }
+}
+
+void write_file(char *out_file, uint8_t *data, int size) {
+  FILE *fp_out = fopen(out_file, "wb");
+  if (fp_out == NULL) {
+    fprintf(stderr, "Couldn't open the file %s\n", out_file);
+    fprintf(stderr, "Exiting!\n");
+    exit(EXIT_FAILURE);
+  }
+
+  fwrite(data, size, 1, fp_out);
+  fclose(fp_out);
 }
 
 int main(int argc, char **argv) {
@@ -118,19 +132,9 @@ int main(int argc, char **argv) {
   state.address = 0;
   fseek(fp_in, 0, SEEK_SET);
   read_file(fp_in, build_memory, &state);
-  
   fclose(fp_in);
 
+  write_file(argv[2], state.memory, binary_size);
 
-  // char *in_file = argv[1];
-  // char *out_file = argv[2];
-  // FILE *fp_out = fopen(out_file, "wb");
-  // if (fp_out == NULL) {
-  //   fprintf(stderr, "Couldn't open the file %s\n", out_file);
-  //   fprintf(stderr, "Exiting!\n");
-  //   exit(EXIT_FAILURE);
-  // }
-
-
-  return EXIT_SUCCESS;
+ return EXIT_SUCCESS;
 }
