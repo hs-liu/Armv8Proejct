@@ -4,6 +4,10 @@
 #define SIGN_EXT(value, in_size, out_size) ((value) << ((out_size) - (in_size)) >> ((out_size) - (in_size)))
 
 #define LED_CHANNEL 8
+#define BASE_ADDRESS 0x3f000000
+#define READ_OFFSET 0x00
+#define WRITE_REGISTER 0x20
+#define STATUS_REGISTER 0x38
 
 typedef struct {
     uint8_t channel: 4; // : defines how many bits channel uses
