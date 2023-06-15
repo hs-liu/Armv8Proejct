@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -15,6 +16,10 @@ bool is_load_literal_instruction(char *address_str, int address_str_len) {
 
 bool is_pre_index_addressing(char *next_token) {
     return next_token != NULL && next_token[0] == '!';
+}
+
+bool is_post_index_addressing(char *next_token) {
+    return next_token != NULL && next_token[0] == '#';
 }
 
 void assemble_load_literal_instruction(char *address_str, uint32_t *instruction, assembler_state_t *state) {
@@ -65,7 +70,7 @@ void assemble_pre_index_addressing_instruction(char *address_str, uint32_t *inst
     uint8_t xn = get_register(xn_str, &sf);
     if (sf != SF_64) {
         fprintf(stderr, "Invalid index register: %s\n", xn_str);
-        fprintf(stderr, "Index register must be an X register!");
+        fprintf(stderr, "Address register must be an X register!");
         fprintf(stderr, "Exiting!\n");
         exit(EXIT_FAILURE);
     }
@@ -76,6 +81,41 @@ void assemble_pre_index_addressing_instruction(char *address_str, uint32_t *inst
         fprintf(stderr, "Exiting!\n");
         exit(EXIT_FAILURE);
     }
+    int64_t simm = strtoll(simm_str + 1, NULL, 0);
+    if (simm < MIN_SIMM9 || simm > MAX_SIMM9) {
+        fprintf(stderr, "Immediate '%s' is not a valid 9-bit signed immediate!\n", simm_str);
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+    SET_BITS(*instruction, PRE_POST_SIMM9_OFFSET, PRE_POST_SIMM9_SIZE, simm);
+}
+
+void assemble_post_index_addressing_instruction(
+    char *xn_str,
+    char *simm_str,
+    uint32_t *instruction,
+    assembler_state_t *state
+) {
+    SET_BITS(*instruction, ENCODING_OFFSET, ENCODING_SIZE, PRE_POST_ENCODING);
+    SET_BITS(*instruction, PRE_POST_I_OFFSET, PRE_POST_I_SIZE, POST_INDEX_I);
+
+    if (xn_str[0] != '[') {
+        fprintf(stderr, "Invalid register address: %s\n", xn_str);
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+    uint8_t sf = SF_64;
+    uint8_t xn = get_register(xn_str + 1, &sf);
+    if (sf != SF_64) {
+        fprintf(stderr, "Invalid index register: %s\n", xn_str);
+        fprintf(stderr, "Address register must be an X register!");
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+    SET_BITS(*instruction, SDT_XN_OFFSET, SDT_XN_SIZE, xn);
+
+
+    assert(simm_str[0] == '#');
     int64_t simm = strtoll(simm_str + 1, NULL, 0);
     if (simm < MIN_SIMM9 || simm > MAX_SIMM9) {
         fprintf(stderr, "Immediate '%s' is not a valid 9-bit signed immediate!\n", simm_str);
@@ -107,6 +147,9 @@ void assemble_load_store_instruction(char *opcode, char *line, assembler_state_t
     SET_BITS(instruction, DT_SF_OFFSET, DT_SF_SIZE, sf);
 
     char *next_token = strtok(NULL, ",");
+    if (next_token != NULL) {
+        next_token = strip_line(next_token, NULL);
+    }
 
     if (is_load_literal_instruction(address_str, address_str_len)) {
         assemble_load_literal_instruction(address_str, &instruction, state);
@@ -114,6 +157,11 @@ void assemble_load_store_instruction(char *opcode, char *line, assembler_state_t
     else if (is_pre_index_addressing(next_token)) {
         SET_BITS(instruction, SDT_L_OFFSET, SDT_L_SIZE, LOAD_L);
         assemble_pre_index_addressing_instruction(address_str, &instruction, state);
+    }
+    else if (is_post_index_addressing(next_token)) {
+        SET_BITS(instruction, SDT_L_OFFSET, SDT_L_SIZE, LOAD_L);
+        assemble_post_index_addressing_instruction(address_str, next_token, &instruction, state);
+
     }
 
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
