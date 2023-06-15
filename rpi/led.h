@@ -15,7 +15,7 @@
 #define MAILBOX_ADDRESS BASE_ADDRESS+MAILBOX_OFFSET
 #define MAILBOX_READ ((mailbox_message_t *)(BASE_ADDRESS+READ_OFFSET))
 #define MAILBOX_WRITE ((mailbox_message_t *)(BASE_ADDRESS+WRITE_OFFSET))
-#define MAILBOX_STATUS ((mailbox_message_t *)(BASE_ADDRESS+STATUS_OFFSET))
+#define MAILBOX_STATUS ((mail_status_t *)(BASE_ADDRESS+STATUS_OFFSET))
 
 #define LED_ON 0x00000001
 #define LED_OFF 0x00000000
@@ -52,4 +52,4 @@ typedef struct {
     uint32_t end;
 } req_res_buffer_t;
 
-void mailbox_sent(mail_queue *requests, mailbox_message_t mag);
+void mailbox_sent(mail_queue_t *requests, mailbox_message_t mag);
