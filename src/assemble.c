@@ -7,155 +7,15 @@
 #include <ctype.h>
 
 #include "symbol_table.h"
+#include "assemble.h"
+#include "assemble_dt.h"
 #include "utils.h"
-
-#define MAX_LINE_LENGTH 1024
-
-const char *data_processing_opcodes[] = {
-  "add", "adds", "sub", "subs",
-  "cmp", "cmn", 
-  "neg", "negs",
-  "and", "ands", "bic", "bics", "eor", "orr", "eon", "orn",
-  "tst",
-  "movk", "movn", "movz",
-  "mov",
-  "mvn",
-  "madd", "msub",
-  "mul", "mneg",
-};
-
-const char *branch_opcodes[] = {
-  "b", "b.eq", "b.ne", "b.ge", "b.lt", "b.gt", "b.le", "b.al",
-  "br",
-};
-
-
-const char *load_store_opcodes[] = {
-  "str", "ldr",
-};
-
-const char *special[] = {
-  ".int", "nop",
-};
-
-typedef void (*process_line_fn)(char *line, void *data);
-
-typedef struct {
-  uint64_t address;
-  hashmap_t *symbol_table;
-  uint8_t *memory;
-} assembler_state_t;
 
 // Tokenizer for breaking a line into its label, opcode and operand field
 
 
 
 // Instruction assembler
-
-
-// Strip line of trailing and leading whitespace
-// returns resulting length of the line in second argument
-char *strip_line(char *line, int *res_len) {
-  int len = strlen(line);
-  
-  // Skip leading whitespace
-  while (len > 0 && isspace(line[0])) {
-    line++;
-    len--;
-  }
-  // Skip trailing whitespace
-  while (len > 0 && isspace(line[len - 1])) {
-    len--;
-    line[len] = '\0';
-  }
-
-  if (res_len != NULL) {
-    *res_len = len;
-  }
-  return line;
-}
-
-
-// Check if the string (may not be null terminated) is a symbol
-bool is_symbol(char *symbol, int len) {
-  if (len <= 0) {
-    return false;
-  }
-  if (!isalpha(symbol[0]) && symbol[0] != '_' && symbol[0] != '.') {
-    return false;
-  }
-  for (int i = 1; i < len; i++) {
-    if (!isalnum(symbol[i]) && symbol[i] != '_' && symbol[i] != '.' && symbol[i] != '$') {
-      return false;
-    }
-  }
-  return true;
-}
-
-static inline bool is_symbol_declaration(char *line, int len) {
-  return is_symbol(line, len - 1) && line[len - 1] == ':';
-}
-
-// Building symbol table
-// Line should be null terminated and should not have a trailing newline
-void build_symbol_table(char *line, void *data) {
-  assembler_state_t *state = (assembler_state_t *)data;
-  int len;
-  line = strip_line(line, &len);
-
-  // Skip empty lines
-  if (*line == '\0') {
-    return;
-  }
-
-  if (is_symbol_declaration(line, len)) {
-    // Add symbol to symbol table
-    char *symbol = line;
-    symbol[len - 1] = '\0';
-    hashmap_set(state->symbol_table, symbol, state->address);
-  } else {
-    // Increment address
-    state->address += WORD_SIZE_BYTES;
-  }
-}
-
-// Takes in null terminated opcode and
-// returns true if it is a data processing opcode
-bool is_data_processing_opcode(char *opcode) {
-  for (int i = 0; i < sizeof(data_processing_opcodes) / sizeof(char *); i++) {
-    if (strcmp(opcode, data_processing_opcodes[i]) == 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool is_branch_opcode(char *opcode) {
-  for (int i = 0; i < sizeof(branch_opcodes) / sizeof(char *); i++) {
-    if (strcmp(opcode, branch_opcodes[i]) == 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool is_load_store_opcode(char *opcode) {
-  for (int i = 0; i < sizeof(load_store_opcodes) / sizeof(char *); i++) {
-    if (strcmp(opcode, load_store_opcodes[i]) == 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool is_special_instruction(char *opcode) {
-  for (int i = 0; i < sizeof(special) / sizeof(char *); i++) {
-    if (strcmp(opcode, special[i]) == 0) {
-      return true;
-    }
-  }
-  return false;
-}
 
 // Assemble a special instruction
 void assemble_special_instruction(char *opcode, char *line, assembler_state_t *state) {
@@ -168,11 +28,11 @@ void assemble_special_instruction(char *opcode, char *line, assembler_state_t *s
       exit(EXIT_FAILURE);
     }
     int32_t integer = strtoll(int_str, NULL, 0);
-    memcpy(state->memory + state->address, &integer, 4);
+    memcpy(state->memory + state->address, &integer, WORD_SIZE_BYTES);
   } else if (strcmp(opcode, "nop") == 0) {
     // Add a nop to memory
     uint32_t nop = NOP_INSTRUCTION;
-    memcpy(state->memory + state->address, &nop, 4);
+    memcpy(state->memory + state->address, &nop, WORD_SIZE_BYTES);
   }
   state->address += WORD_SIZE_BYTES;
 }
@@ -204,6 +64,7 @@ void build_memory(char *line, void *data) {
   if (is_branch_opcode(opcode)) {
   } else if (is_data_processing_opcode(opcode)) {
   } else if (is_load_store_opcode(opcode)) {
+    assemble_load_store_instruction(opcode, line, state);
   } else if (is_special_instruction(opcode)) {
     assemble_special_instruction(opcode, line, state);
   } else {
