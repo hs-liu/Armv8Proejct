@@ -23,6 +23,28 @@ const char *data_processing_opcodes[] = {
   "mul", "mneg",
 };
 
+const char *data_processing_multiply_opcodes[] = {
+  "madd", "msub",
+};
+
+const char *data_processing_two_op_opcodes[] = {
+  "add", "adds", "sub", "subs",
+  "and", "ands", "bic", "bics", "eor", "orr", "eon", "orn",
+};
+
+const char *data_processing_single_op_opcodes[] = {
+  "mov",
+  "mul", "mneg",
+  "neg", "negs",
+  "mvn",
+  "movk", "movn", "movz",
+};
+
+const char *data_processing_two_op_no_dest_opcodes[] = {
+  "cmp", "cmn", 
+  "tst",
+};
+
 const char *branch_opcodes[] = {
   "b", "b.eq", "b.ne", "b.ge", "b.lt", "b.gt", "b.le", "b.al",
   "br",
@@ -103,15 +125,49 @@ void build_symbol_table(char *line, void *data) {
   }
 }
 
-// Takes in null terminated opcode and
-// returns true if it is a data processing opcode
-bool is_data_processing_opcode(char *opcode) {
-  for (int i = 0; i < sizeof(data_processing_opcodes) / sizeof(char *); i++) {
-    if (strcmp(opcode, data_processing_opcodes[i]) == 0) {
+bool is_data_processing_multiply_opcode(char *opcode) {
+  for (int i = 0; i < sizeof(data_processing_multiply_opcodes) / sizeof(char *); i++) {
+    if (strcmp(opcode, data_processing_multiply_opcodes[i]) == 0) {
       return true;
     }
   }
   return false;
+}
+
+bool is_data_processing_two_op_opcode(char *opcode) {
+  for (int i = 0; i < sizeof(data_processing_two_op_opcodes) / sizeof(char *); i++) {
+    if (strcmp(opcode, data_processing_two_op_opcodes[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool is_data_processing_single_op_opcode(char *opcode) {
+  for (int i = 0; i < sizeof(data_processing_single_op_opcodes) / sizeof(char *); i++) {
+    if (strcmp(opcode, data_processing_single_op_opcodes[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool is_data_processing_two_op_no_dest_opcode(char *opcode) {
+  for (int i = 0; i < sizeof(data_processing_two_op_no_dest_opcodes) / sizeof(char *); i++) {
+    if (strcmp(opcode, data_processing_two_op_no_dest_opcodes[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Takes in null terminated opcode and
+// returns true if it is a data processing opcode
+bool is_data_processing_opcode(char *opcode) {
+  return is_data_processing_multiply_opcode(opcode) ||
+    is_data_processing_two_op_opcode(opcode) ||
+    is_data_processing_single_op_opcode(opcode) ||
+    is_data_processing_two_op_no_dest_opcode(opcode);
 }
 
 bool is_branch_opcode(char *opcode) {
