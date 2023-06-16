@@ -18,26 +18,23 @@ void handle_bit_logic(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_
     }
 }
 
-void madd(FILE* fp, uint8_t rd, uint8_t rn, uint64_t rm, uint8_t ra, uint8_t sf) {
+void handle_reg_arithmetic(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, char *shift_str, uint8_t shift_amount, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "madd w%d, w%d, w%d, w%d\n", rd, rn, rm, ra);
+        fprintf(fp, "%s w%d, w%d, w%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     } else {
-        fprintf(fp, "madd x%d, x%d, x%d, x%d\n", rd, rn, rm, ra);
+        fprintf(fp, "%s x%d, x%d, x%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     }
 }
 
-
-void msub(FILE* fp, uint8_t rd, uint8_t rn, uint64_t rm, uint8_t ra, uint8_t sf) {
+void handle_multiply(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, uint8_t ra, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "msub w%d, w%d, w%d, w%d\n", rd, rn, rm, ra);
+        fprintf(fp, "%s w%d, w%d, w%d, w%d\n", op_string, rd, rn, rm, ra);
     } else {
-        fprintf(fp, "msub x%d, x%d, x%d, x%d\n", rd, rn, rm, ra);
+        fprintf(fp, "%s x%d, x%d, x%d, x%d\n", op_string, rd, rn, rm, ra);
     }
 }
-
-
 
 void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
     uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);
@@ -49,43 +46,44 @@ void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
     uint8_t rd = SELECT_BITS(instruction, REG_RD_OFFSET, REG_RD_SIZE);
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     uint64_t op2;
+    char shift_str[4];
     switch (shift) {
         case LSL_VALUE:
-            // op2 = lsl(cpu_state, rm, operand, sf);
+            strcpy(shift_str, "lsl");
             break;
         case LSR_VALUE:
-            // op2 = lsr(cpu_state, rm, operand, sf);
+            strcpy(shift_str, "lsr");
             break;
         case ASR_VALUE:
-            // op2 = asr(cpu_state, rm, operand, sf);
+            strcpy(shift_str, "asr");
             break;
         default:
             fprintf(stderr, "Illegal instruction: invalid shift value\n");
             fprintf(stderr, "Exiting!\n");
             exit(EXIT_FAILURE);
     }
+    char op_str[5];
     switch (opc) {
         case ADD_OPC:
-            // add_imm(fp, rd, rn, op2, sf);
             break;
         case SUB_OPC:
-            // sub_imm(fp, rd, rn, op2, sf);
+            strcpy(op_str, "sub");
             break;
         case ADDS_OPC:
-            // adds_imm(fp, rd, rn, op2, sf);
+            strcpy(op_str, "adds");
             break;
         case SUBS_OPC:
-            // subs_imm(fp, rd, rn, op2, sf);
+            strcpy(op_str, "subs");
             break;
         default:
             fprintf(stderr, "Illegal instruction: invalid opc value\n");
             fprintf(stderr, "Exiting!\n");
             exit(EXIT_FAILURE);
     }
+    handle_reg_arithmetic(fp, op_str, rd, rn, rm, shift_str, operand, sf);
 }
 
 void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
-    // printf("disassemble_bit_logic_instruction\n");
     uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);
     uint8_t opc = SELECT_BITS(instruction, REG_OPC_OFFSET, REG_OPC_SIZE);
     uint8_t opr = SELECT_BITS(instruction, REG_OPR_OFFSET, REG_OPR_SIZE);
@@ -95,7 +93,6 @@ void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
     uint8_t rd = SELECT_BITS(instruction, REG_RD_OFFSET, REG_RD_SIZE);
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     uint8_t N = SELECT_BITS(opr, N_OFFSET, N_SIZE);
-    // uint64_t op2;
     char shift_str[4];
     switch (shift) {
         case LSL_VALUE:
@@ -132,7 +129,6 @@ void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
                 fprintf(stderr, "Exiting!\n");
                 exit(EXIT_FAILURE);
         }
-        handle_bit_logic(fp, op_str, rd, rn, rm, shift_str, operand, sf);
 
     }
     if (N == 1) {
@@ -154,8 +150,8 @@ void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
                 fprintf(stderr, "Exiting!\n");
                 exit(EXIT_FAILURE);
         }
-        handle_bit_logic(fp, op_str, rd, rn, rm, shift_str, operand, sf);
     }
+        handle_bit_logic(fp, op_str, rd, rn, rm, shift_str, operand, sf);
 }
 
 void disassemble_multiply_instruction(FILE* fp, uint32_t instruction) {
@@ -165,12 +161,14 @@ void disassemble_multiply_instruction(FILE* fp, uint32_t instruction) {
     uint8_t rd = SELECT_BITS(instruction, REG_RD_OFFSET, REG_RD_SIZE);
     uint8_t x = SELECT_BITS(instruction, REG_X_OFFSET, REG_M_SIZE);
     uint8_t ra = SELECT_BITS(instruction, REG_RA_OFFSET, REG_RA_SIZE);
+    char op_str[5];
     if (x == MADD_X) {
-        madd(fp, rd, ra, rn, rm, sf);
+        strcpy(op_str, "madd");
     }
     if (x == MSUB_X) {
-        msub(fp, rd, ra, rn, rm, sf);
+        strcpy(op_str, "msub");
     }
+    handle_multiply(fp, op_str, rd, rn, rm, ra, sf);
 
 }
 
