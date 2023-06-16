@@ -3,42 +3,40 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "disassemble.h"
 #include "dp_reg.h"
 #include "dp_imm.h"
 
-void and (FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
+void handle_bit_logic(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, char *shift_str, uint8_t shift_amount, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (sf == SF_32) {
+        fprintf(fp, "%s w%d, w%d, w%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+    } else {
+        fprintf(fp, "%s x%d, x%d, x%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+    }
 }
 
-void bic(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
-}
-
-void orr(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
-}
-
-
-void orn(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
-}
-
-void eon(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
-}
-
-void eor(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
-}
-
-void ands(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
-}
-
-void bics(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf) {
-}
-
-void madd(FILE* fp, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm, uint8_t sf) {
+void madd(FILE* fp, uint8_t rd, uint8_t rn, uint64_t rm, uint8_t ra, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (sf == SF_32) {
+        fprintf(fp, "madd w%d, w%d, w%d, w%d\n", rd, rn, rm, ra);
+    } else {
+        fprintf(fp, "madd x%d, x%d, x%d, x%d\n", rd, rn, rm, ra);
+    }
 }
 
 
-void msub(FILE* fp, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm, uint8_t sf) {
+void msub(FILE* fp, uint8_t rd, uint8_t rn, uint64_t rm, uint8_t ra, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
+    if (sf == SF_32) {
+        fprintf(fp, "msub w%d, w%d, w%d, w%d\n", rd, rn, rm, ra);
+    } else {
+        fprintf(fp, "msub x%d, x%d, x%d, x%d\n", rd, rn, rm, ra);
+    }
 }
+
 
 
 void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
@@ -68,16 +66,16 @@ void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
     }
     switch (opc) {
         case ADD_OPC:
-            add_imm(fp, rd, rn, op2, sf);
+            // add_imm(fp, rd, rn, op2, sf);
             break;
         case SUB_OPC:
-            sub_imm(fp, rd, rn, op2, sf);
+            // sub_imm(fp, rd, rn, op2, sf);
             break;
         case ADDS_OPC:
-            adds_imm(fp, rd, rn, op2, sf);
+            // adds_imm(fp, rd, rn, op2, sf);
             break;
         case SUBS_OPC:
-            subs_imm(fp, rd, rn, op2, sf);
+            // subs_imm(fp, rd, rn, op2, sf);
             break;
         default:
             fprintf(stderr, "Illegal instruction: invalid opc value\n");
@@ -87,6 +85,7 @@ void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
 }
 
 void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
+    // printf("disassemble_bit_logic_instruction\n");
     uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);
     uint8_t opc = SELECT_BITS(instruction, REG_OPC_OFFSET, REG_OPC_SIZE);
     uint8_t opr = SELECT_BITS(instruction, REG_OPR_OFFSET, REG_OPR_SIZE);
@@ -97,63 +96,65 @@ void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
     uint8_t N = SELECT_BITS(opr, N_OFFSET, N_SIZE);
     // uint64_t op2;
+    char shift_str[4];
     switch (shift) {
         case LSL_VALUE:
-            // op2 = lsl(cpu_state, rm, operand, sf);
+            strcpy(shift_str, "lsl");
             break;
         case LSR_VALUE:
-            // op2 = lsr(cpu_state, rm, operand, sf);
+            strcpy(shift_str, "lsr");
             break;
         case ASR_VALUE:
-            // op2 = asr(cpu_state, rm, operand, sf);
+            strcpy(shift_str, "asr");
             break;
         case ROR_VALUE:
-            // op2 = ror(cpu_state, rm, operand, sf);
+            strcpy(shift_str, "ror");
             break;
-        default:
-            fprintf(stderr, "Illegal instruction: invalid shift value\n");
-            fprintf(stderr, "Exiting!\n");
-            exit(EXIT_FAILURE);
     }
+    char op_str[5];
     if (N == 0) {
+
         switch (opc) {
             case AND_OPC:
-                and (fp, rd, rn, rm, sf);
+                strcpy(op_str, "and");
                 break;
             case ORR_OPC:
-                orr(fp, rd, rn, op2, sf);
+                strcpy(op_str, "orr");
                 break;
             case EON_OPC:
-                eor(fp, rd, rn, op2, sf);
+            strcpy(op_str, "eon");
                 break;
             case ANDS_OPC:
-                ands(fp, rd, rn, op2, sf);
+            strcpy(op_str, "ands");
                 break;
             default:
                 fprintf(stderr, "Illegal instruction: invalid opc value\n");
                 fprintf(stderr, "Exiting!\n");
                 exit(EXIT_FAILURE);
         }
+        handle_bit_logic(fp, op_str, rd, rn, rm, shift_str, operand, sf);
+
     }
     if (N == 1) {
         switch (opc) {
             case AND_OPC:
-                bic(fp, rd, rn, op2, sf);
+                strcpy(op_str, "bic");
                 break;
             case ORR_OPC:
-                orn(fp, rd, rn, op2, sf);
+                strcpy(op_str, "orn");
                 break;
             case EON_OPC:
-                eon(fp, rd, rn, op2, sf);
+                strcpy(op_str, "eon");
                 break;
             case ANDS_OPC:
-                bics(fp, rd, rn, op2, sf);
+                strcpy(op_str, "bics");
                 break;
             default:
                 fprintf(stderr, "Illegal instruction: invalid opc value\n");
                 fprintf(stderr, "Exiting!\n");
                 exit(EXIT_FAILURE);
         }
+        handle_bit_logic(fp, op_str, rd, rn, rm, shift_str, operand, sf);
     }
 }
 

@@ -66,16 +66,9 @@
 #define SUB_OPC 0x2
 #define SUBS_OPC 0x3
 
-void and (FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
-void bic(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
-void orr(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
-void orn(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
-void eon(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
-void eor(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
-void ands(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
-void bics(FILE* fp, uint8_t dest, uint8_t src1, uint64_t op2, uint8_t sf);
-void madd(FILE* fp, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm, uint8_t sf);
-void msub(FILE* fp, uint8_t dest, uint8_t src, uint8_t rn, uint8_t rm, uint8_t sf);
+void handle_bit_logic(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, char *shift_str, uint8_t shift_amount, uint8_t sf);
+void madd(FILE* fp, uint8_t rd, uint8_t rn, uint64_t rm, uint8_t ra, uint8_t sf);
+void msub(FILE* fp, uint8_t rd, uint8_t rn, uint64_t rm, uint8_t ra, uint8_t sf);
 
 void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction);
 void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction);

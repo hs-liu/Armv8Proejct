@@ -160,6 +160,7 @@ bool disassemble_cycle(state_t *cpu_state, FILE* fp) {
     }
 
     if (instruction == HALT_INSTRUCTION) {
+        fprintf(fp, "and x0, x0, x0\n");
         return false;
     }
 
