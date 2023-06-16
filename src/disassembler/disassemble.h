@@ -56,4 +56,4 @@ void write_word(uint64_t address, uint64_t word, uint8_t sf);
 uint64_t get_register_value(state_t *cpu_state, uint8_t reg_num, uint8_t sf);
 void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uint8_t sf);
 void output_result(state_t *cpu_state, FILE *fp);
-bool emulate_cycle(state_t *cpu_state);
+bool disassemble_cycle(state_t *cpu_state, FILE* fp);

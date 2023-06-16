@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "emulate.h"
+#include "disassemble.h"
 #include "dp_imm.h"
 
 void add_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
@@ -12,9 +12,9 @@ void add_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
     // 64 bit: "add x{dest} x{src1} #imm" into a output file
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "add w%d, w%d, #%lx\n", dest, src1, imm);
+        fprintf(fp, "add w%d, w%d, #%llx\n", dest, src1, imm);
     } else {
-        fprintf(fp, "add x%d, x%d, #%lx\n", dest, src1, imm);
+        fprintf(fp, "add x%d, x%d, #%llx\n", dest, src1, imm);
     }
 }
 
@@ -23,9 +23,9 @@ void add_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
 void adds_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "adds w%d, w%d, #%lx\n", dest, src1, imm);
+        fprintf(fp, "adds w%d, w%d, #%llx\n", dest, src1, imm);
     } else {
-        fprintf(fp, "adds x%d, x%d, #%lx\n", dest, src1, imm);
+        fprintf(fp, "adds x%d, x%d, #%llx\n", dest, src1, imm);
     }
 }
 
@@ -35,9 +35,9 @@ void sub_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
     // 64 bit: "sub x{dest} x{src1} #imm" into a output file
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "sub w%d, w%d, #%lx\n", dest, src1, imm);
+        fprintf(fp, "sub w%d, w%d, #%llx\n", dest, src1, imm);
     } else {
-        fprintf(fp, "sub x%d, x%d, #%lx\n", dest, src1, imm);
+        fprintf(fp, "sub x%d, x%d, #%llx\n", dest, src1, imm);
     }
 }
 
@@ -45,9 +45,9 @@ void sub_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
 void subs_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf) {
     assert (sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "subs w%d, w%d, #%lx\n", dest, src1, imm);
+        fprintf(fp, "subs w%d, w%d, #%llx\n", dest, src1, imm);
     } else {
-        fprintf(fp, "subs x%d, x%d, #%lx\n", dest, src1, imm);
+        fprintf(fp, "subs x%d, x%d, #%llx\n", dest, src1, imm);
     }
 }
 
@@ -56,12 +56,14 @@ void movn_imm(FILE* fp, uint8_t dest, uint64_t imm, uint8_t sf, uint8_t hw) {
 }
 
 void movz_imm(FILE* fp, uint8_t dest, uint64_t imm, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
 }
 
 void movk_imm(FILE* fp, uint8_t dest, uint8_t hw, uint64_t imm, uint8_t sf) {
+    assert(sf == SF_32 || sf == SF_64);
 }
 
-void execute_dpimm_instruction(uint32_t instruction, FILE* fp) {
+void disassemble_dpimm_instruction(FILE* fp, uint32_t instruction) {
     uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
     uint8_t opc = SELECT_BITS(instruction, IMM_OPC_OFFSET, IMM_OPC_SIZE);
     uint8_t opi = SELECT_BITS(instruction, IMM_OPI_OFFSET, IMM_OPI_SIZE);

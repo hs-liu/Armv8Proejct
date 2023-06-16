@@ -48,10 +48,10 @@
 #define MOVZ_OPC 0x2
 #define MOVK_OPC 0x3
 
-void add_imm(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf);
-void adds_imm(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf);
-void sub_imm(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf);
-void subs_imm(state_t *cpu_state, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf);
-void movz_imm(state_t *cpu_state, uint8_t dest, uint64_t imm, uint8_t sf);
-void movk_imm(state_t *cpu_state, uint8_t dest, uint8_t hw, uint64_t imm, uint8_t sf);
-void execute_dpimm_instruction(state_t *cpu_state, uint32_t instruction);
+void add_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf);
+void adds_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf);
+void sub_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf);
+void subs_imm(FILE* fp, uint8_t dest, uint8_t src1, uint64_t imm, uint8_t sf);
+void movz_imm(FILE* fp, uint8_t dest, uint64_t imm, uint8_t sf);
+void movk_imm(FILE* fp, uint8_t dest, uint8_t hw, uint64_t imm, uint8_t sf);
+void disassemble_dpimm_instruction(FILE* fp, uint32_t instruction);

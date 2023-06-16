@@ -6,10 +6,10 @@
 #include <stdbool.h>
 
 #include "disassemble.h"
-#include "branch.h"
+// #include "branch.h"
 #include "dp_reg.h"
 #include "dp_imm.h"
-#include "data_trans.h"
+// #include "data_trans.h"
 
 uint8_t main_memory[MEMORY_CAPACITY];
 
@@ -126,9 +126,9 @@ void set_register_value(state_t *cpu_state, uint8_t reg_num, uint64_t value, uin
 void output_result(state_t *cpu_state, FILE *fp) {
     fprintf(fp, "Registers:\n");
     for (int i = 0; i < 31; i++) {
-        fprintf(fp, "X%02d    = %016lx\n", i, cpu_state->R[i].X);
+        fprintf(fp, "X%02d    = %016llx\n", i, cpu_state->R[i].X);
     }
-    fprintf(fp, "PC     = %016lx\n", cpu_state->PC.X);
+    fprintf(fp, "PC     = %016llx\n", cpu_state->PC.X);
     char n_flag = cpu_state->PSTATE.N ? 'N' : '-';
     char z_flag = cpu_state->PSTATE.Z ? 'Z' : '-';
     char c_flag = cpu_state->PSTATE.C ? 'C' : '-';
@@ -139,7 +139,7 @@ void output_result(state_t *cpu_state, FILE *fp) {
     for (uint64_t addr = 0; addr < MEMORY_CAPACITY; addr += WORD_SIZE_BYTES) {
         uint32_t word = fetch_word(addr, SF_32);
         if (word) {
-            fprintf(fp, "0x%08lx : %08x\n", addr, word);
+            fprintf(fp, "0x%08llx : %08x\n", addr, word);
         }
     }
 }
@@ -147,7 +147,7 @@ void output_result(state_t *cpu_state, FILE *fp) {
 /**
  * Return value is true iff the program is to continue running
 */
-bool emulate_cycle(state_t *cpu_state) {
+bool disassemble_cycle(state_t *cpu_state, FILE* fp) {
     // Fetch
     uint32_t instruction = fetch_word(cpu_state->PC.X, SF_32);
 
@@ -164,30 +164,30 @@ bool emulate_cycle(state_t *cpu_state) {
     }
 
     if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
-        execute_dpimm_instruction(cpu_state, instruction);
+        disassemble_dpimm_instruction(fp, instruction);
         cpu_state->PC.X += WORD_SIZE_BYTES;
     }
 
     if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
-        execute_dpreg_instruction(cpu_state, instruction);
+        disassemble_dpreg_instruction(fp, instruction);
         cpu_state->PC.X += WORD_SIZE_BYTES;
     }
 
     if (CHECK_BITS(op0, OP0_LS_MASK, OP0_LS_VALUE)) {
-        uint8_t sf = SELECT_BITS(instruction, DT_SF_OFFSET, DT_SF_SIZE);
+        // uint8_t sf = SELECT_BITS(instruction, DT_SF_OFFSET, DT_SF_SIZE);
 
-        uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
-        if (CHECK_BITS(opcode, SDT_MASK, SDT_VALUE)) {
-            execute_sdt(cpu_state, instruction, sf);
-        }
-        if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
-            execute_load_literal(cpu_state, instruction, sf);
-        }
+        // uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
+        // if (CHECK_BITS(opcode, SDT_MASK, SDT_VALUE)) {
+        //     execute_sdt(cpu_state, instruction, sf);
+        // }
+        // if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
+        //     execute_load_literal(cpu_state, instruction, sf);
+        // }
         cpu_state->PC.X += WORD_SIZE_BYTES;
     }
 
     if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
-        branch_instruction(cpu_state, instruction);
+        // branch_instruction(cpu_state, instruction);
     }
 
     return true;
@@ -218,10 +218,10 @@ int main(int argc, char **argv) {
 
     bool continue_running = true;
     do {
-        continue_running = emulate_cycle(&cpu_state);
+        continue_running = disassemble_cycle(&cpu_state, output_fp);
     } while (continue_running);
 
-    output_result(&cpu_state, output_fp);
+    // output_result(&cpu_state, output_fp);
 
     return EXIT_SUCCESS;
 }
