@@ -10,19 +10,6 @@
 #include "utils.h"
 
 
-const char *data_processing_opcodes[] = {
-  "add", "adds", "sub", "subs",
-  "cmp", "cmn", 
-  "neg", "negs",
-  "and", "ands", "bic", "bics", "eor", "orr", "eon", "orn",
-  "tst",
-  "movk", "movn", "movz",
-  "mov",
-  "mvn",
-  "madd", "msub",
-  "mul", "mneg",
-};
-
 const char *data_processing_multiply_opcodes[] = {
   "madd", "msub",
 };

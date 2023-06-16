@@ -10,13 +10,8 @@
 #include "assemble.h"
 #include "assemble_branch.h"
 #include "assemble_dt.h"
+#include "assemble_dp.h"
 #include "utils.h"
-
-// Tokenizer for breaking a line into its label, opcode and operand field
-
-
-
-// Instruction assembler
 
 // Assemble a special instruction
 void assemble_special_instruction(char *opcode, char *line, assembler_state_t *state) {
@@ -65,9 +60,7 @@ void build_memory(char *line, void *data) {
   if (is_branch_opcode(opcode)) {
     assemble_branch_instruction(opcode, line, state);
   } else if (is_data_processing_opcode(opcode)) {
-    uint32_t instruction = HALT_INSTRUCTION;
-    memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
-    state->address += WORD_SIZE_BYTES;
+    assemble_data_processing_instruction(opcode, line, state);
   } else if (is_load_store_opcode(opcode)) {
     assemble_load_store_instruction(opcode, line, state);
   } else if (is_special_instruction(opcode)) {

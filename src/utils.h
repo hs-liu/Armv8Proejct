@@ -164,6 +164,78 @@
 #define COND_LE 0xD
 #define COND_AL 0xE
 
+// Data Processing (Register) Constants
+#define DPREG_OFFSET 25
+#define DPREG_SIZE 3
+
+#define REG_SF_OFFSET 31
+#define REG_SF_SIZE 1
+
+#define REG_OPC_OFFSET 29
+#define REG_OPC_SIZE 2
+
+#define REG_M_OFFSET 28
+#define REG_M_SIZE 1
+
+#define REG_OPR_OFFSET 21
+#define REG_OPR_SIZE 4
+
+#define REG_RM_OFFSET 16
+#define REG_RM_SIZE 5
+
+#define REG_OPERAND_OFFSET 10
+#define REG_OPERAND_SIZE 6
+
+#define REG_X_OFFSET 15
+#define REG_X_SIZE 1
+
+#define REG_RA_OFFSET 10
+#define REG_RA_SIZE 5
+
+#define REG_RN_OFFSET 5
+#define REG_RN_SIZE 5
+
+#define REG_RD_OFFSET 0
+#define REG_RD_SIZE 5
+
+#define ARITHMETIC_M 0
+#define ARITHMETIC_MASK 0x9
+#define ARITHMETIC_VALUE 0x8
+
+#define BIT_LOGIC_M 0
+#define BIT_LOGIC_MASK 0x8
+#define BIT_LOGIC_VALUE 0x0
+
+#define MULTIPLY_M 1
+#define MULTIPLY_MASK 0xF
+#define MULTIPLY_VALUE 0x8
+
+#define MULTIPLY_ENCODING 0x1b000000
+
+#define SHIFT_OFFSET 1
+#define SHIFT_SIZE 2
+#define N_OFFSET 0
+#define N_SIZE 1
+
+#define LSL_VALUE 0x0
+#define LSR_VALUE 0x1
+#define ASR_VALUE 0x2
+#define ROR_VALUE 0x3
+
+#define AND_OPC 0x0
+#define ORR_OPC 0x1
+#define EON_OPC 0x2
+#define ANDS_OPC 0x3
+
+#define MADD_X 0
+#define MSUB_X 1
+
+#define ADD_OPC 0x0
+#define ADDS_OPC 0x1
+#define SUB_OPC 0x2
+#define SUBS_OPC 0x3
+
+
 
 
 #define SELECT_BITS(value, offset, size) (((value) >> (offset)) & ((1ll << (size)) - 1))
@@ -177,6 +249,10 @@ char *strip_line(char *line, int *res_len);
 bool is_symbol(char *symbol, int len);
 bool is_symbol_declaration(char *line, int len);
 void build_symbol_table(char *line, void *data);
+bool is_data_processing_multiply_opcode(char *opcode);
+bool is_data_processing_two_op_opcode(char *opcode);
+bool is_data_processing_single_op_opcode(char *opcode);
+bool is_data_processing_two_op_no_dest_opcode(char *opcode);
 bool is_data_processing_opcode(char *opcode);
 bool is_branch_opcode(char *opcode);
 bool is_load_store_opcode(char *opcode);
