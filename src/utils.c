@@ -14,8 +14,11 @@ const char *data_processing_multiply_opcodes[] = {
   "madd", "msub",
 };
 
-const char *data_processing_two_op_opcodes[] = {
+const char *data_processing_arithmetic_opcodes[] = {
   "add", "adds", "sub", "subs",
+};
+
+const char *data_processing_bit_logic_opcodes[] = {
   "and", "ands", "bic", "bics", "eor", "orr", "eon", "orn",
 };
 
@@ -65,9 +68,16 @@ char *strip_line(char *line, int *res_len) {
     *res_len = len;
   }
 
+  for (int i = 0; i < len; i++) {
+    line[i] = tolower(line[i]);
+  }
+
   return line;
 }
 
+bool is_immediate(char *operand) {
+  return operand[0] == '#';
+}
 
 // Check if the string (may not be null terminated) is a symbol
 bool is_symbol(char *symbol, int len) {
@@ -121,13 +131,27 @@ bool is_data_processing_multiply_opcode(char *opcode) {
   return false;
 }
 
-bool is_data_processing_two_op_opcode(char *opcode) {
-  for (int i = 0; i < sizeof(data_processing_two_op_opcodes) / sizeof(char *); i++) {
-    if (strcmp(opcode, data_processing_two_op_opcodes[i]) == 0) {
+bool is_data_processing_arithmetic_opcode(char *opcode) {
+  for (int i = 0; i < sizeof(data_processing_arithmetic_opcodes) / sizeof(char *); i++) {
+    if (strcmp(opcode, data_processing_arithmetic_opcodes[i]) == 0) {
       return true;
     }
   }
   return false;
+}
+
+bool is_data_processing_bit_logic_opcode(char *opcode) {
+  for (int i = 0; i < sizeof(data_processing_bit_logic_opcodes) / sizeof(char *); i++) {
+    if (strcmp(opcode, data_processing_bit_logic_opcodes[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool is_data_processing_two_op_opcode(char *opcode) {
+  return is_data_processing_arithmetic_opcode(opcode) ||
+         is_data_processing_bit_logic_opcode(opcode);
 }
 
 bool is_data_processing_single_op_opcode(char *opcode) {

@@ -165,6 +165,8 @@
 #define COND_AL 0xE
 
 // Data Processing (Register) Constants
+#define DPREG_ENCODING 0x0A000000
+
 #define DPREG_OFFSET 25
 #define DPREG_SIZE 3
 
@@ -179,6 +181,9 @@
 
 #define REG_OPR_OFFSET 21
 #define REG_OPR_SIZE 4
+
+#define ARITHMETIC_OPR 0x8
+#define BIT_LOGIC_OPR 0x0
 
 #define REG_RM_OFFSET 16
 #define REG_RM_SIZE 5
@@ -217,6 +222,11 @@
 #define N_OFFSET 0
 #define N_SIZE 1
 
+#define REG_SHIFT_OFFSET 22
+#define REG_SHIFT_SIZE 2
+#define REG_N_OFFSET 21
+#define REG_N_SIZE 1
+
 #define LSL_VALUE 0x0
 #define LSR_VALUE 0x1
 #define ASR_VALUE 0x2
@@ -235,7 +245,59 @@
 #define SUB_OPC 0x2
 #define SUBS_OPC 0x3
 
+// Data Processing (Immediate) Constants
+#define DPIMM_ENCODING 0x10000000
+#define IMM_SF_OFFSET 31
+#define IMM_SF_SIZE 1
 
+#define IMM_OPC_OFFSET 29
+#define IMM_OPC_SIZE 2
+
+#define IMM_OFFSET 26
+#define IMM_SIZE 3
+
+#define IMM_OPI_OFFSET 23
+#define IMM_OPI_SIZE 3
+#define IMM_VALUE 0x4
+
+#define IMM_OPERAND_OFFSET 5
+#define IMM_OPERAND_SIZE 18
+
+#define IMM_RD_OFFSET 0
+#define IMM_RD_SIZE 5
+
+#define SF_32 0
+#define SF_64 1
+
+#define IMM_ARITHMETIC_OPI 0x2
+#define IMM_WIDE_MOVE_OPI 0x5
+
+#define IMM_SH_OFFSET 22
+#define IMM_SH_SIZE 1
+
+#define IMM_SHIFT_AMOUNT 12
+
+#define IMM_IMM12_OFFSET 10
+#define IMM_IMM12_SIZE 12
+
+#define IMM_RN_OFFSET 5
+#define IMM_RN_SIZE 5
+
+#define ADD_OPC 0x0
+#define ADDS_OPC 0x1
+#define SUB_OPC 0x2
+#define SUBS_OPC 0x3
+
+
+#define IMM_HW_OFFSET 21
+#define IMM_HW_SIZE 2
+
+#define IMM_IMM16_OFFSET 5
+#define IMM_IMM16_SIZE 16
+
+#define MOVN_OPC 0x0
+#define MOVZ_OPC 0x2
+#define MOVK_OPC 0x3
 
 
 #define SELECT_BITS(value, offset, size) (((value) >> (offset)) & ((1ll << (size)) - 1))
@@ -246,10 +308,13 @@
 
 
 char *strip_line(char *line, int *res_len);
+bool is_immediate(char *operand);
 bool is_symbol(char *symbol, int len);
 bool is_symbol_declaration(char *line, int len);
 void build_symbol_table(char *line, void *data);
 bool is_data_processing_multiply_opcode(char *opcode);
+bool is_data_processing_arithmetic_opcode(char *opcode);
+bool is_data_processing_bit_logic_opcode(char *opcode);
 bool is_data_processing_two_op_opcode(char *opcode);
 bool is_data_processing_single_op_opcode(char *opcode);
 bool is_data_processing_two_op_no_dest_opcode(char *opcode);
