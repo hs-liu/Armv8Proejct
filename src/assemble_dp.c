@@ -383,18 +383,22 @@ void handle_data_processing_single_op_reg(
 ) {
     assert(is_data_processing_single_op_alias_opcode(opcode));
     if (strcmp(opcode, "mov") == 0) {
+        SET_BITS(*instruction, REG_RN_OFFSET, REG_RN_SIZE, ZR_REG);
         handle_data_processing_two_op_reg("orr", rm_str, shift_str, instruction);
         handle_data_processing_reg_shift(shift_str, instruction);
     }
     else if (strcmp(opcode, "mvn") == 0) {
+        SET_BITS(*instruction, REG_RN_OFFSET, REG_RN_SIZE, ZR_REG);
         handle_data_processing_two_op_reg("orn", rm_str, shift_str, instruction);
         handle_data_processing_reg_shift(shift_str, instruction);
     }
     else if (strcmp(opcode, "neg") == 0) {
+        SET_BITS(*instruction, REG_RN_OFFSET, REG_RN_SIZE, ZR_REG);
         handle_data_processing_two_op_reg("sub", rm_str, shift_str, instruction);
         handle_data_processing_reg_shift(shift_str, instruction);
     }
     else if (strcmp(opcode, "negs") == 0) {
+        SET_BITS(*instruction, REG_RN_OFFSET, REG_RN_SIZE, ZR_REG);
         handle_data_processing_two_op_reg("subs", rm_str, shift_str, instruction);
         handle_data_processing_reg_shift(shift_str, instruction);
     }
@@ -466,7 +470,5 @@ void assemble_data_processing_instruction(char *opcode, char *line, assembler_st
         fprintf(stderr, "Invalid data processing opcode: %s\n", opcode);
         exit(EXIT_FAILURE);
     }
-    // uint32_t instruction = HALT_INSTRUCTION;
-    // memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
     state->address += WORD_SIZE_BYTES;
 }
