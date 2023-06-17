@@ -11,21 +11,21 @@
 
 void assemble_unconditional_branch(char *target_str, int target_str_len, char *line, assembler_state_t *state) {
     uint64_t instruction = 0;
-    if (!is_symbol(target_str, target_str_len)) {
-        fprintf(stderr, "Invalid line: %s\n", line);
-        fprintf(stderr, "Exiting!\n");
-        exit(EXIT_FAILURE);
+    uint64_t target_address = 0;
+    SET_BITS(instruction, ENCODING_OFFSET, ENCODING_SIZE, UNCON_BRANCH_VALUE);
+    if (is_symbol(target_str, target_str_len)) {
+        hashmap_entry_t *entry = hashmap_find_entry(state->symbol_table, target_str);
+        if (entry == NULL) {
+            fprintf(stderr, "Symbol '%s' not found!\n", target_str);
+            fprintf(stderr, "Exiting!\n");
+            exit(EXIT_FAILURE);
+        }
+        target_address = entry->value;
+    }
+    else {
+        target_address = strtoll(target_str, NULL, 0);
     }
 
-    uint64_t target_address = strtoll(target_str, NULL, 0);
-    SET_BITS(instruction, ENCODING_OFFSET, ENCODING_SIZE, UNCON_BRANCH_VALUE);
-    hashmap_entry_t *entry = hashmap_find_entry(state->symbol_table, target_str);
-    if (entry == NULL) {
-        fprintf(stderr, "Symbol '%s' not found!\n", target_str);
-        fprintf(stderr, "Exiting!\n");
-        exit(EXIT_FAILURE);
-    }
-    target_address = entry->value;
     if (target_address % WORD_SIZE_BYTES != 0) {
         fprintf(stderr, "Symbol '%s' not word aligned!\n", target_str);
         fprintf(stderr, "Exiting!\n");
