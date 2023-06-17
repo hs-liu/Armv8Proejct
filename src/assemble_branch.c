@@ -9,10 +9,8 @@
 #include "assemble_branch.h"
 #include "utils.h"
 
-void assemble_unconditional_branch(char *target_str, int target_str_len, char *line, assembler_state_t *state) {
-    uint64_t instruction = 0;
+int64_t get_target_address_offset(char *target_str, int target_str_len, assembler_state_t *state) {
     uint64_t target_address = 0;
-    SET_BITS(instruction, ENCODING_OFFSET, ENCODING_SIZE, UNCON_BRANCH_VALUE);
     if (is_symbol(target_str, target_str_len)) {
         hashmap_entry_t *entry = hashmap_find_entry(state->symbol_table, target_str);
         if (entry == NULL) {
@@ -32,7 +30,13 @@ void assemble_unconditional_branch(char *target_str, int target_str_len, char *l
         exit(EXIT_FAILURE);
     }
 
-    uint64_t offset = (target_address - state->address) / WORD_SIZE_BYTES;
+    return (target_address - state->address) / WORD_SIZE_BYTES;
+}
+
+void assemble_unconditional_branch(char *target_str, int target_str_len, char *line, assembler_state_t *state) {
+    uint64_t instruction = 0;
+    SET_BITS(instruction, ENCODING_OFFSET, ENCODING_SIZE, UNCON_BRANCH_VALUE);
+    int64_t offset = get_target_address_offset(target_str, target_str_len, state);
     SET_BITS(instruction, BRANCH_SIMM26_OFFSET , BRANCH_SIMM26_SIZE , offset);
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
@@ -51,9 +55,13 @@ void assemble_reg_branch(char *target_str, assembler_state_t *state) {
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
 
-void assemble_cond_branch(char *opcode, assembler_state_t *state) {
+void assemble_cond_branch(char *opcode, char *target_str, int target_str_len, assembler_state_t *state) {
     uint64_t instruction = 0;
     SET_BITS(instruction, ENCODING_OFFSET, ENCODING_SIZE, CON_BRANCH_VALUE);
+
+    int64_t offset = get_target_address_offset(target_str, target_str_len, state);
+    SET_BITS(instruction, BRANCH_SIMM19_OFFSET, BRANCH_SIMM19_SIZE, offset);
+
     char *condition_str = opcode + 2;
     if (strcmp(condition_str, "eq") == 0) {
         SET_BITS(instruction, BRANCH_COND_OFFSET, BRANCH_COND_SIZE, COND_EQ);
@@ -101,7 +109,7 @@ void assemble_branch_instruction(char *opcode, char *line, assembler_state_t *st
         assemble_reg_branch(target_str, state);
     }
     else if (strncmp(opcode, "b.", 2) == 0) {
-        assemble_cond_branch(opcode, state);
+        assemble_cond_branch(opcode, target_str, target_str_len, state);
     }
 
     state->address += WORD_SIZE_BYTES;
