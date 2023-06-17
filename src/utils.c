@@ -22,11 +22,14 @@ const char *data_processing_bit_logic_opcodes[] = {
   "and", "ands", "bic", "bics", "eor", "orr", "eon", "orn",
 };
 
-const char *data_processing_single_op_opcodes[] = {
+const char *data_processing_single_op_alias_opcodes[] = {
   "mov",
   "mul", "mneg",
   "neg", "negs",
   "mvn",
+};
+
+const char *data_processing_wide_move_opcodes[] = {
   "movk", "movn", "movz",
 };
 
@@ -154,13 +157,27 @@ bool is_data_processing_two_op_opcode(char *opcode) {
          is_data_processing_bit_logic_opcode(opcode);
 }
 
-bool is_data_processing_single_op_opcode(char *opcode) {
-  for (int i = 0; i < sizeof(data_processing_single_op_opcodes) / sizeof(char *); i++) {
-    if (strcmp(opcode, data_processing_single_op_opcodes[i]) == 0) {
+bool is_data_processing_single_op_alias_opcode(char *opcode) {
+  for (int i = 0; i < sizeof(data_processing_single_op_alias_opcodes) / sizeof(char *); i++) {
+    if (strcmp(opcode, data_processing_single_op_alias_opcodes[i]) == 0) {
       return true;
     }
   }
   return false;
+}
+
+bool is_data_processing_wide_move_opcode(char *opcode) {
+  for (int i = 0; i < sizeof(data_processing_wide_move_opcodes) / sizeof(char *); i++) {
+    if (strcmp(opcode, data_processing_wide_move_opcodes[i]) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool is_data_processing_single_op_opcode(char *opcode) {
+  return is_data_processing_single_op_alias_opcode(opcode) ||
+    is_data_processing_wide_move_opcode(opcode);
 }
 
 bool is_data_processing_two_op_no_dest_opcode(char *opcode) {

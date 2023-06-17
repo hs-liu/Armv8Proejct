@@ -288,9 +288,10 @@
 #define SUB_OPC 0x2
 #define SUBS_OPC 0x3
 
-
 #define IMM_HW_OFFSET 21
 #define IMM_HW_SIZE 2
+
+#define WIDE_MOVE_SHIFT_AMOUNT 16
 
 #define IMM_IMM16_OFFSET 5
 #define IMM_IMM16_SIZE 16
@@ -316,6 +317,8 @@ bool is_data_processing_multiply_opcode(char *opcode);
 bool is_data_processing_arithmetic_opcode(char *opcode);
 bool is_data_processing_bit_logic_opcode(char *opcode);
 bool is_data_processing_two_op_opcode(char *opcode);
+bool is_data_processing_single_op_alias_opcode(char *opcode);
+bool is_data_processing_wide_move_opcode(char *opcode);
 bool is_data_processing_single_op_opcode(char *opcode);
 bool is_data_processing_two_op_no_dest_opcode(char *opcode);
 bool is_data_processing_opcode(char *opcode);
