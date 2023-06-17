@@ -146,7 +146,7 @@ void handle_data_processing_reg_shift(
     char *shift_type_str = strtok(shift_str, " ");
     char *shift_operand_str = strtok(NULL, " ");
     if (shift_type_str == NULL || shift_operand_str == NULL) {
-        fprintf(stderr, "Invalid shift");
+        fprintf(stderr, "Invalid shift\n");
         fprintf(stderr, "Exiting!\n");
         exit(EXIT_FAILURE);
     }
@@ -451,6 +451,40 @@ void assemble_data_processing_two_op_no_dest_opcode_instruction(
     char *line,
     assembler_state_t *state
 ) {
+    char *rn_str = strtok(NULL, ",");
+    char *operand_str = strtok(NULL, ",");
+    char *shift_str = strtok(NULL, ",");
+     if (rn_str == NULL || operand_str == NULL) {
+        fprintf(stderr, "Invalid line: %s\n", line);
+        fprintf(stderr, "Exiting!\n");
+        exit(EXIT_FAILURE);
+    }
+    rn_str = strip_line(rn_str, NULL);
+    operand_str = strip_line(operand_str, NULL);
+    if (shift_str != NULL) {
+        shift_str = strip_line(shift_str, NULL);
+    }
+    uint8_t sf_rn;
+    uint8_t rn = get_register(rn_str, &sf_rn);
+
+    uint32_t instruction = 0;
+    SET_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE, sf_rn);
+    SET_BITS(instruction, REG_RN_OFFSET, REG_RN_SIZE, rn);
+
+    void (*handle_data_processing_two_op)(char *, char *, char *, uint32_t *) =
+        is_immediate(operand_str) ? &handle_data_processing_two_op_imm : &handle_data_processing_two_op_reg;
+
+    SET_BITS(instruction, REG_RD_OFFSET, REG_RD_SIZE, ZR_REG);
+    if (strcmp(opcode, "cmp") == 0) {
+        handle_data_processing_two_op("subs", operand_str, shift_str, &instruction);
+    }
+    else if (strcmp(opcode, "cmn") == 0) {
+        handle_data_processing_two_op("adds", operand_str, shift_str, &instruction);
+    }
+    else if (strcmp(opcode, "tst") == 0) {
+        handle_data_processing_two_op("ands", operand_str, shift_str, &instruction);
+    }
+    memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
 
 void assemble_data_processing_instruction(char *opcode, char *line, assembler_state_t *state) {
