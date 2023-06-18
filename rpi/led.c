@@ -58,6 +58,11 @@ void mailbox_send(mail_queue_t *requests, mail_queue_t *responses, mailbox_messa
     // ignore this request if response queue is full
 }
 
+void sleep(double s) {
+    time_t cur = time(NULL); // NULL because we don't need to save the time in a specific address
+    while ((difftime(time(NULL), cur)) < s);
+}
+
 int main (int argc, char **argv) {
     // allocate memory for the response and required queues
     mail_queue_t *responses;
