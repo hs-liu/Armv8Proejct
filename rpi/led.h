@@ -51,7 +51,7 @@ typedef struct {
 typedef struct {
     uint32_t size;
     uint32_t code;
-    msg_tag_t tag[NUM_OF_TAGS];
+    msg_tag_t *tag;
     uint32_t end;
 } req_res_buffer_t;
 
