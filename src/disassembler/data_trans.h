@@ -84,9 +84,9 @@
 #define IS_REG_OFF 1
 #define I_IS_PRE 1
 
-void sdt_uimm(state_t *cpu_state, uint64_t imm12, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
-void sdt_regoffset(state_t *cpu_state, uint8_t xm, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
-void sdt_preind(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
-void sdt_postind(state_t *cpu_state, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
-void execute_load_literal(state_t *cpu_state, uint32_t instruction, uint8_t sf);
-void execute_sdt(state_t *cpu_state, uint32_t instruction, uint8_t sf);
+void sdt_uimm(FILE *fp, uint64_t imm12, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
+void sdt_regoffset(FILE *fp, uint8_t xm, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
+void sdt_preind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
+void sdt_postind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
+void execute_load_literal(FILE *fp, uint32_t instruction, uint8_t sf);
+void execute_sdt(FILE *fp, uint32_t instruction, uint8_t sf);

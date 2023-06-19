@@ -9,7 +9,7 @@ CFLAGS  ?= -std=c17 -g\
 
 all: disassemble
 
-disassemble: disassemble.o dp_reg.o dp_imm.o
+disassemble: disassemble.o dp_reg.o dp_imm.o data_trans.o branch.o
 
 clean:
 	$(RM) *.o disassemble

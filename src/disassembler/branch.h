@@ -28,5 +28,4 @@
 #define COND_LE 0xD
 #define COND_AL 0xE
 
-void branch_instruction(state_t *cpu_state, uint32_t instruction);
-void conditional_branch(state_t *cpu_state, int64_t offset, uint8_t cond);
+void branch_instruction(FILE *fp, reg_t *PC, uint32_t instruction);
