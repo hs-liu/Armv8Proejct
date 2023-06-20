@@ -30,7 +30,7 @@ int64_t get_target_address_offset(char *target_str, int target_str_len, assemble
         exit(EXIT_FAILURE);
     }
 
-    return (target_address - state->address) / WORD_SIZE_BYTES;
+    return (target_address - (state->base_address + state->address)) / WORD_SIZE_BYTES;
 }
 
 void assemble_unconditional_branch(char *target_str, int target_str_len, char *line, assembler_state_t *state) {

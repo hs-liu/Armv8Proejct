@@ -112,12 +112,15 @@ void write_file(char *out_file, uint8_t *data, int size) {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 3) {
-    printf("Usage: ./assemble <file_in> <file_out>\n");
+  if (argc != 3 && argc != 4) {
+    printf("Usage: ./assemble <file_in> <file_out> [<base_address>]\n");
     return EXIT_FAILURE;
   }
 
+  uint64_t base_address = argc == 4 ? strtoll(argv[3], NULL, 0) : 0;
+
   assembler_state_t state = {
+    .base_address = base_address,
     .address = 0,
     .symbol_table = hashmap_create(),
     .memory = NULL,
@@ -136,7 +139,8 @@ int main(int argc, char **argv) {
   // Second pass: build memory
   uint64_t binary_size = state.address;
   state.memory = malloc(binary_size);
-  state.address = 0;
+  state.base_address = base_address;
+  state.address = 0; //TODO: change to base address of program loaded into for rpi
   fseek(fp_in, 0, SEEK_SET);
   read_file(fp_in, build_memory, &state);
   fclose(fp_in);

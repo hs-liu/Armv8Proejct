@@ -52,14 +52,8 @@ void assemble_load_literal_instruction(char *address_str, uint32_t *instruction,
         transfer_address = entry->value;
     }
 
-    if ((abs(transfer_address - state->address) >= MB_SIZE) ||
-        (transfer_address % WORD_SIZE_BYTES != 0)) {
-        fprintf(stderr, "Address '%s' is not within 1MB of the current address!\n", address_str);
-        fprintf(stderr, "Exiting!\n");
-        exit(EXIT_FAILURE);
-    }
  
-    transfer_address = transfer_address - state->address;
+    transfer_address = transfer_address - (state->base_address + state->address);
     transfer_address = transfer_address / WORD_SIZE_BYTES;
     SET_BITS(*instruction, DT_SIMM19_OFFSET, DT_SIMM19_SIZE, transfer_address);
 }
