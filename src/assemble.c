@@ -72,6 +72,14 @@ void build_memory(char *line, void *data) {
   }
 }
 
+// Remove inline comments
+void preprocess_line(char *buffer) {
+  char *comment_start = strstr(buffer, "//");
+  if (comment_start != NULL) {
+    *comment_start = '\0';
+  }
+}
+
 // Assembly file reader to read the file line by line
 // and call the process_line function on it
 void read_file(FILE *fp_in, process_line_fn process_line, void *data) {
