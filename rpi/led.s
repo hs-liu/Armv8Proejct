@@ -1,53 +1,99 @@
-ldr w0, #0x3f00b8A0 // address of mailbox write reg
-ldr w1, #0x3F00B8B8 // addr of mailbox status reg
+// R0: Read Register Address
+// R1: Write Register Address
+// R2: Write status Register Address
+// R3, R4: Temporary registers
+// R5: Address of led_buffer
+// R6: Address of template_led_buffer
+// R7: Read status register address
 
-ldr w2, #0x00000020 // buffer start
-orr w2, wzr, wzr, lsl #0x04
-movz w3, #0x00038041 // temp value holder reg
-orr w2, wzr, w3, lsl #0x08
-movz w3, #0x00000008
-orr w2, wzr, w3, lsl #0x0c
-orr w2, wzr, wzr, lsl #0x010
-movz w3, #0x00000082
-orr w2, wzr, w3, lsl #0x014
-movz w3, #0x00000001
-orr w2, wzr, w3, lsl #0x18 //led_status: on
-orr w2, wzr, wzr, lsl #0x1c
+start:
+    // Move Read Register Address into x0
+    movz x0, #0x3f00, lsl #16
+    movk x0, #0xb880
+    // Move Write Register Address into x1
+    add x1, x0, #0x20
+    // Move Write Status Register Address into x2
+    add x2, x0, #0x38
+    // Move Read Status Register Address into x7
+    add x7, x0, #0x18
+    // Move led_buffer address into x5
+    movz x5, #0x8, lsl #16
+    add x5, x5, #0xa0 // TODO Address of buffer relative to base address 
+    // Move led_buffer address into x6
+    add x6, x5, #0x20
 
-ldr w4, #0x8 //message: channel
-ldr x3, [x4]
-add w3, w3, #0x80000, lsl #0
-orr w4, wzr, w3, lsl #4
+toggle_led_status:
+    ldr w3, [x6, #0x18]
+    movz w4, #1
+    eor w3, w3, w4
+    str w3, [x6, #0x18]
 
-check_write_empty: //every send msg need to check F empty
-    ldr w5, wzr
-    orr w5, wzr, w1, lsr #31 // get F flag
-    cmp w5, wzr
-    b.ne check_write_empty // can write msg if zero
+set_led_buffer:
+    // Copy template buffer to led buffer
+    ldr x3, [x6]
+    str x3, [x5]
+    ldr x3, [x6, #8]
+    str x3, [x5, #8]
+    ldr x3, [x6, #0x10]
+    str x3, [x5, #0x10]
+    ldr x3, [x6, #0x18]
+    str x3, [x5, #0x18]
 
-check_status:
-    orr w5, wzr, w2, lsr #0x18//check_status
-    cmp w5, wzr
-    b.eq  set_on//if status = off, go set on
-    orr w2, w2, w2, lsl #0x18//if status = on, set off <?>
+write:
+    // Get status register
+    ldr w3, [x2]
+    // Test F flag of status register
+    movz w4, #1
+    tst w3, w4, lsl #31
+    // Loop until F flag is clear
+    b.ne write
+write_buffer_to_register:
+    // Move message (Address of buffer (led_buffer) | Property Tags channel (8)) into x3
+    movz w3, #0x8
+    orr w3, w3, w5
+    // Write message to write register
+    str w3, [x1]
 
-send_msg_loop:
-    ldr x0, [x4] // send msg into write_reg
-    movz x3, #0x0002, lsl #16
+read:
+    // Get status register
+    ldr w3, [x2]
+    // Test E flag of status register
+    movz w4, #1
+    tst w3, w4, lsl #30
+    // Loop until E flag is clear
+    b.ne read
+read_message_from_register:
+    // Load from the read register
+    ldr w3, [x0]
 
-wait1: //first wait
-    sub x3, x3, #1
-    cmp x3, #0
-    b.ne wait1
-    b check_write_empty
-    
-set_on:
-    movz x3, #0x00000001
-    orr w2, w2, x3, lsl #0x18
-    b send_msg_loop
+wait:
+    movz x3, #0x0
+    movz x4, #0x80, lsl #16
+wait_loop:
+    add x3, x3, #1
+    cmp x3, x4
+    b.lt wait_loop
 
-//TODO: reset buffer values;
-reset_buffer:
+    b toggle_led_status
 
-//read register
-//check_queue_sizegit
+nop
+nop
+led_buffer:
+    .int 0
+    .int 0
+    .int 0
+    .int 0
+    .int 0
+    .int 0
+    .int 0
+    .int 0
+
+template_led_buffer:
+    .int 32
+    .int 0
+    .int 0x00038041
+    .int 8
+    .int 0x0
+    .int 130
+    .int 0x0
+    .int 0x0
