@@ -12,27 +12,27 @@
 void handle_bit_logic(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, char *shift_str, uint8_t shift_amount, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, w%d, w%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+        fprintf(fp, "%s w%d, w%d, w%ld, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     } else {
-        fprintf(fp, "%s x%d, x%d, x%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+        fprintf(fp, "%s x%d, x%d, x%ld, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     }
 }
 
 void handle_reg_arithmetic(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, char *shift_str, uint8_t shift_amount, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, w%d, w%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+        fprintf(fp, "%s w%d, w%d, w%ld, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     } else {
-        fprintf(fp, "%s x%d, x%d, x%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+        fprintf(fp, "%s x%d, x%d, x%ld, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     }
 }
 
 void handle_multiply(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, uint8_t ra, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, w%d, w%d, w%d\n", op_string, rd, rn, rm, ra);
+        fprintf(fp, "%s w%d, w%d, w%ld, w%d\n", op_string, rd, rn, rm, ra);
     } else {
-        fprintf(fp, "%s x%d, x%d, x%d, x%d\n", op_string, rd, rn, rm, ra);
+        fprintf(fp, "%s x%d, x%d, x%ld, x%d\n", op_string, rd, rn, rm, ra);
     }
 }
 
@@ -45,7 +45,6 @@ void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
     uint8_t rn = SELECT_BITS(instruction, REG_RN_OFFSET, REG_RN_SIZE);
     uint8_t rd = SELECT_BITS(instruction, REG_RD_OFFSET, REG_RD_SIZE);
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
-    uint64_t op2;
     char shift_str[4];
     switch (shift) {
         case LSL_VALUE:

@@ -12,9 +12,9 @@
 void handle_imm_arithmetic(FILE* fp, char* op_string, uint8_t dest, uint8_t src1, uint64_t imm, bool sh, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, w%d, 0x%llx, lsl #%d\n", op_string, dest, src1, imm, sh ? 12 : 0);
+        fprintf(fp, "%s w%d, w%d, 0x%lx, lsl #%d\n", op_string, dest, src1, imm, sh ? 12 : 0);
     } else {
-        fprintf(fp, "%s x%d, x%d, 0x%llx, lsl #%d\n", op_string, dest, src1, imm, sh ? 12 : 0);
+        fprintf(fp, "%s x%d, x%d, 0x%lx, lsl #%d\n", op_string, dest, src1, imm, sh ? 12 : 0);
     }
 }
 
@@ -22,17 +22,17 @@ void handle_mov(FILE* fp, char* op_string, uint8_t rd, uint64_t imm, char *shift
     assert(sf == SF_32 || sf == SF_64);
     if (strcmp(op_string,"movz") == 0 && hw == 0) {
         if (sf == SF_32) {
-            fprintf(fp, "mov w%d, #0x%llx\n", rd, imm);
+            fprintf(fp, "mov w%d, #0x%lx\n", rd, imm);
             return;
         } else {
-            fprintf(fp, "mov x%d, #0x%llx\n", rd, imm);
+            fprintf(fp, "mov x%d, #0x%lx\n", rd, imm);
             return;
         }
     }
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, 0x%llx, %s #%d\n", op_string, rd, imm, shift_string, 16 * hw);
+        fprintf(fp, "%s w%d, 0x%lx, %s #%d\n", op_string, rd, imm, shift_string, 16 * hw);
     } else {
-        fprintf(fp, "%s x%d, 0x%llx, %s #%d\n", op_string, rd, imm, shift_string, 16 * hw);
+        fprintf(fp, "%s x%d, 0x%lx, %s #%d\n", op_string, rd, imm, shift_string, 16 * hw);
     }
 
 }
