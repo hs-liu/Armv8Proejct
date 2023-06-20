@@ -117,25 +117,24 @@ bool disassemble_cycle(reg_t *PC, FILE* fp) {
     // Decode and execute
     uint8_t op0 = SELECT_BITS(instruction, OP0_OFFSET, OP0_SIZE);
 
+    // fprintf(fp, "0x%lx: ", PC->X);
     if (instruction == NOP_INSTRUCTION) {
-        fprintf(fp, "0x%lx: nop\n", PC->X);
+        fprintf(fp, "nop\n");
         PC->X += WORD_SIZE_BYTES;
         return true;
     }
 
     if (instruction == HALT_INSTRUCTION) {
-        fprintf(fp, "0x%lx: and x0, x0, x0\n", PC->X);
+        fprintf(fp, "and x0, x0, x0\n");
         return false;
     }
 
     if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
-        fprintf(fp, "0x%lx: ", PC->X);
         disassemble_dpimm_instruction(fp, instruction);
         PC->X += WORD_SIZE_BYTES;
     }
 
     if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
-        fprintf(fp, "0x%lx: ", PC->X);
         disassemble_dpreg_instruction(fp, instruction);
         PC->X += WORD_SIZE_BYTES;
     }
@@ -145,18 +144,15 @@ bool disassemble_cycle(reg_t *PC, FILE* fp) {
 
         uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
         if (CHECK_BITS(opcode, SDT_MASK, SDT_VALUE)) {
-            fprintf(fp, "0x%lx: ", PC->X);
             execute_sdt(fp, instruction, sf);
         }
         if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
-            fprintf(fp, "0x%lx: ", PC->X);
             execute_load_literal(fp, instruction, sf);
         }
         PC->X += WORD_SIZE_BYTES;
     }
 
     if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
-        fprintf(fp, "0x%lx: ", PC->X);
         branch_instruction(fp, PC, instruction);
         PC->X += WORD_SIZE_BYTES;
     }
