@@ -84,15 +84,18 @@ void preprocess_line(char *buffer) {
 // and call the process_line function on it
 void read_file(FILE *fp_in, process_line_fn process_line, void *data) {
   char buffer[MAX_LINE_LENGTH];
+  int lineNum = 0;
   while (fgets(buffer, MAX_LINE_LENGTH, fp_in) != NULL) {
     int len = strlen(buffer);
     if (buffer[len - 1] != '\n') {
-      fprintf(stderr, "Line too long!\n");
+      fprintf(stderr, "Line too long! %d\n", lineNum);
       fprintf(stderr, "Exiting!\n");
       exit(EXIT_FAILURE);
     }
     buffer[len - 1] = '\0';
+    preprocess_line(buffer);
     process_line(buffer, data);
+    lineNum++;
   }
 }
 
