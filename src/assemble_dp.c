@@ -12,7 +12,9 @@
 #include "utils.h"
 
 /**
- * Assembles a data processing instruction
+ * Sets rn and rm and multiply encoding bits of instruction
+ * Also sets x bits of instruction based on opcode
+ * Separated for reuse in alias instructions
  * 
  * @param opcode the opcode of the instruction
  * @param line the line containing the instruction
@@ -87,7 +89,9 @@ void assemble_data_processing_multiply_instruction(
 }
 
 /**
- * Assembles a data processing instruction
+ * Assembles multiply instruction
+ * Sets sf, rd, and ra bits of instruction, before passing to helper function
+ * to set rn and rm bits, and x bits based on opcode
  * 
  * @param opcode the opcode of the instruction
  * @param line the line containing the instruction
@@ -109,7 +113,8 @@ void handle_data_processing_arithmetic(char *opcode, uint32_t *instruction) {
 }
 
 /**
- * Assembles a data processing instruction
+ * Assembles a data processing instruction,
+ * Sets the OPC bits of the instruction based on the opcode for an arithmetic opcode
  * 
  * @param opcode the opcode of the instruction
  * @param line the line containing the instruction
