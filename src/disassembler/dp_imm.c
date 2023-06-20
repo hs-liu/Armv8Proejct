@@ -54,14 +54,15 @@ void disassemble_dpimm_instruction(FILE* fp, uint32_t instruction) {
         switch (opc) {
             case ADD_OPC:
                 strcpy(op_str, "add");
+                break;
             case ADDS_OPC:
-            strcpy(op_str, "adds");
+                strcpy(op_str, "adds");
                 break;
             case SUB_OPC:
-            strcpy(op_str, "sub");
+                strcpy(op_str, "sub");
                 break;
             case SUBS_OPC:
-            strcpy(op_str, "subs");
+                strcpy(op_str, "subs");
                 break;
         }
         handle_imm_arithmetic(fp, op_str, rd, rn, imm12, sh, sf);
