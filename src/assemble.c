@@ -13,7 +13,13 @@
 #include "assemble_dp.h"
 #include "utils.h"
 
-// Assemble a special instruction
+/**
+ * @brief Assembles a special instruction
+ * 
+ * @param opcode 
+ * @param line 
+ * @param state 
+ */
 void assemble_special_instruction(char *opcode, char *line, assembler_state_t *state) {
   if (strcmp(opcode, ".int") == 0) {
     // Add the integer to memory
@@ -33,6 +39,13 @@ void assemble_special_instruction(char *opcode, char *line, assembler_state_t *s
   state->address += WORD_SIZE_BYTES;
 }
 
+/**
+ * @brief builds the memory from the assembly file
+ * 
+ * @param opcode 
+ * @param line 
+ * @param state 
+ */
 void build_memory(char *line, void *data) {
   assembler_state_t *state = (assembler_state_t *)data;
   int len;
@@ -72,7 +85,11 @@ void build_memory(char *line, void *data) {
   }
 }
 
-// Remove inline comments
+/**
+ * @brief Preprocesses the line by removing inline comments
+ * 
+ * @param buffer 
+ */
 void preprocess_line(char *buffer) {
   char *comment_start = strstr(buffer, "//");
   if (comment_start != NULL) {
@@ -80,8 +97,13 @@ void preprocess_line(char *buffer) {
   }
 }
 
-// Assembly file reader to read the file line by line
-// and call the process_line function on it
+/**
+ * @brief Reads the file line by line and calls the process_line function on it
+ * 
+ * @param fp_in 
+ * @param process_line 
+ * @param data 
+ */
 void read_file(FILE *fp_in, process_line_fn process_line, void *data) {
   char buffer[MAX_LINE_LENGTH];
   int lineNum = 0;
@@ -99,6 +121,13 @@ void read_file(FILE *fp_in, process_line_fn process_line, void *data) {
   }
 }
 
+/**
+ * @brief Writes the binary data to the output file
+ * 
+ * @param out_file 
+ * @param data 
+ * @param size 
+ */
 void write_file(char *out_file, uint8_t *data, int size) {
   FILE *fp_out = fopen(out_file, "wb");
   if (fp_out == NULL) {

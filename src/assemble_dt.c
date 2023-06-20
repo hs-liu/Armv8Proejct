@@ -10,30 +10,74 @@
 #include "assemble.h"
 #include "utils.h"
 
+/**
+ * returns true if the given string is a load literal instruction
+ * 
+ * @param address_str the string containing the address
+ * @param address_str_len the length of the address string
+ * @return true if the given string is a load literal instruction
+ */
 bool is_load_literal_instruction(char *address_str, int address_str_len) {
     return address_str[0] == '#' || is_symbol(address_str, address_str_len);
 }
 
+/**
+ * returns true if the given string is a pre-index addressing instruction
+ * 
+ * @param next_token the string containing the next token
+ * @return true if the given string is a pre-index addressing instruction
+ */
 bool is_pre_index_addressing(char *next_token) {
     return next_token != NULL && next_token[0] == '!';
 }
 
+/**
+ * returns true if the given string is a post-index addressing instruction
+ * 
+ * @param next_token the string containing the next token
+ * @return true if the given string is a post-index addressing instruction
+ */
 bool is_post_index_addressing(char *next_token) {
     return next_token != NULL && next_token[0] == '#';
 }
 
+/**
+ * returns true if the given string is a register offset addressing instruction
+ * 
+ * @param offset_str the string containing the offset
+ * @return true if the given string is a register offset addressing instruction
+ */
 bool is_register_offset_addressing(char *offset_str) {
     return offset_str != NULL && offset_str[0] == 'x';
 }
 
+/**
+ * returns true if the given string is a unsigned offset addressing instruction
+ * 
+ * @param offset_str the string containing the offset
+ * @return true if the given string is a signed offset addressing instruction
+ */
 bool is_unsigned_offset_addressing(char *offset_str) {
     return offset_str != NULL && offset_str[0] == '#';
 }
 
+/**
+ * returns true if the given string is a zero unsigned offset addressing instruction
+ * 
+ * @param offset_str the string containing the offset
+ * @return true if the given string is a zero unsigned offset addressing instruction
+ */
 bool is_zero_unsigned_offset(char *offset_str) {
     return offset_str == NULL;
 }
 
+/**
+ * assembles a load literal instruction
+ * 
+ * @param address_str 
+ * @param instruction 
+ * @param state 
+ */
 void assemble_load_literal_instruction(char *address_str, uint32_t *instruction, assembler_state_t *state) {
     uint64_t transfer_address = 0;
     if (address_str[0] == '#') {
@@ -58,6 +102,13 @@ void assemble_load_literal_instruction(char *address_str, uint32_t *instruction,
     SET_BITS(*instruction, DT_SIMM19_OFFSET, DT_SIMM19_SIZE, transfer_address);
 }
 
+/**
+ * assembles a pre-index addressing instruction
+ * 
+ * @param address_str 
+ * @param instruction 
+ * @param state 
+ */
 void assemble_pre_index_addressing_instruction(char *address_str, uint32_t *instruction, assembler_state_t *state) {
     SET_BITS(*instruction, ENCODING_OFFSET, ENCODING_SIZE, PRE_POST_ENCODING);
     SET_BITS(*instruction, PRE_POST_I_OFFSET, PRE_POST_I_SIZE, PRE_INDEX_I);
@@ -96,6 +147,14 @@ void assemble_pre_index_addressing_instruction(char *address_str, uint32_t *inst
     SET_BITS(*instruction, PRE_POST_SIMM9_OFFSET, PRE_POST_SIMM9_SIZE, simm);
 }
 
+/**
+ * assembles a post-index addressing instruction
+ * 
+ * @param xn_str 
+ * @param simm_str 
+ * @param instruction 
+ * @param state 
+ */
 void assemble_post_index_addressing_instruction(
     char *xn_str,
     char *simm_str,
@@ -131,6 +190,14 @@ void assemble_post_index_addressing_instruction(
     SET_BITS(*instruction, PRE_POST_SIMM9_OFFSET, PRE_POST_SIMM9_SIZE, simm);
 }
 
+/**
+ * assembles a register offset addressing instruction
+ * 
+ * @param xn_str
+ * @param xm_str 
+ * @param instruction 
+ * @param state 
+ */
 void assemble_register_offset_addressing_instruction(
     char *xn_str,
     char *xm_str,
@@ -158,6 +225,14 @@ void assemble_register_offset_addressing_instruction(
     SET_BITS(*instruction, XM_OFFSET, XM_SIZE, xm);
 }
 
+/**
+ * assembles a unsigned offset addressing instruction
+ * 
+ * @param xn_str 
+ * @param offset_str 
+ * @param instruction 
+ * @param state 
+ */
 void assemble_unsigned_offset_addressing_instruction(
     char *xn_str,
     char *offset_str,
@@ -204,6 +279,14 @@ void assemble_unsigned_offset_addressing_instruction(
     SET_BITS(*instruction, SDT_IMM12_OFFSET , SDT_IMM12_SIZE, offset);
 }
 
+/**
+ * handles unsigned offset addressing
+ * 
+ * @param address_str 
+ * @param rt_sf 
+ * @param instruction 
+ * @param state 
+ */
 void handle_offset_addressing(
     char *address_str,
     uint8_t rt_sf,
@@ -233,7 +316,13 @@ void handle_offset_addressing(
     }
 }
 
-// Assemble a Load / Store instrucution
+/**
+ * assembles a load / store instruction
+ * 
+ * @param opcode 
+ * @param line 
+ * @param state 
+ */
 void assemble_load_store_instruction(char *opcode, char *line, assembler_state_t *state) {
     char *rt_str = strtok(NULL, ",");
     char *address_str = strtok(NULL, "]");

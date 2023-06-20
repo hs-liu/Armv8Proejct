@@ -11,11 +11,15 @@
 #include "assemble_dp.h"
 #include "utils.h"
 
-/*
+/**
  * Sets rn and rm and multiply encoding bits of instruction
  * Also sets x bits of instruction based on opcode
  * Separated for reuse in alias instructions
-*/
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void handle_data_processing_multiply_instruction(
     char *opcode,
     char *rn_str,
@@ -45,11 +49,13 @@ void handle_data_processing_multiply_instruction(
     }
 }
 
-/*
- * Assembles multiply instruction
- * Sets sf, rd, and ra bits of instruction, before passing to helper function
- * to set rn and rm bits, and x bits based on opcode
-*/
+/**
+ * Assembles a data processing instruction
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void assemble_data_processing_multiply_instruction(
     char *opcode,
     char *line,
@@ -82,10 +88,15 @@ void assemble_data_processing_multiply_instruction(
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
 
-/*
- * Sets the OPC bits of the instruction based on the opcode.
- * For an arithmetic opcode
-*/
+/**
+ * Assembles multiply instruction
+ * Sets sf, rd, and ra bits of instruction, before passing to helper function
+ * to set rn and rm bits, and x bits based on opcode
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void handle_data_processing_arithmetic(char *opcode, uint32_t *instruction) {
     if (strcmp(opcode, "add") == 0) {
         SET_BITS(*instruction, REG_OPC_OFFSET, REG_OPC_SIZE, ADD_OPC);
@@ -101,10 +112,14 @@ void handle_data_processing_arithmetic(char *opcode, uint32_t *instruction) {
     }
 }
 
-/*
- * Sets the OPC bits of the instruction based on the opcode.
- * For a bit-wise logical opcode
-*/
+/**
+ * Assembles a data processing instruction,
+ * Sets the OPC bits of the instruction based on the opcode for an arithmetic opcode
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void handle_data_processing_bit_logic(char *opcode, uint32_t *instruction) {
     if (strcmp(opcode, "and") == 0) {
         SET_BITS(*instruction, REG_OPC_OFFSET, REG_OPC_SIZE, AND_OPC);
@@ -136,6 +151,13 @@ void handle_data_processing_bit_logic(char *opcode, uint32_t *instruction) {
     }
 }
 
+/**
+ * Assembles a data processing instruction for a register shift
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void handle_data_processing_reg_shift(
     char *shift_str,
     uint32_t *instruction
@@ -178,6 +200,13 @@ void handle_data_processing_reg_shift(
     SET_BITS(*instruction, REG_OPERAND_OFFSET, REG_OPERAND_SIZE, shift_operand);
 }
 
+/**
+ * Assembles a data processing instruction for two operands with a register
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */ 
 void handle_data_processing_two_op_reg(
     char *opcode,
     char *rm_str,
@@ -229,13 +258,13 @@ void handle_data_processing_imm_shift(
     SET_BITS(*instruction, IMM_SH_OFFSET, IMM_SH_SIZE, shift_operand);
 }
 
-/*
- * Handle data processing instructions with two operands, one of which is an
- * immediate.
+/**
+ * Assembles a data processing instruction for two operands with an immediate
  * 
- * Sets the encoding for Data Processing (Immediate) instruction,
- * as well as IMM12, OPI, and the opcode
-*/
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void handle_data_processing_two_op_imm(
     char *opcode,
     char *operand_str,
@@ -256,6 +285,13 @@ void handle_data_processing_two_op_imm(
     handle_data_processing_imm_shift(shift_str, instruction);
 }
 
+/**
+ * Assembles a data processing instruction for two operands
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void assemble_data_processing_two_op_opcode_instruction(
     char *opcode,
     char *line,
@@ -302,6 +338,13 @@ void assemble_data_processing_two_op_opcode_instruction(
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
 
+/**
+ * Assembles a data processing instruction for three operands
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void handle_data_processing_wide_move(
     char *opcode,
     char *imm_str,
@@ -348,6 +391,14 @@ void handle_data_processing_wide_move(
     }
 }
 
+
+/**
+ * Assembles a data processing instruction for single operand and two immediates
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void handle_data_processing_single_op_imm(
     char *opcode,
     char *operand_str,
@@ -375,6 +426,13 @@ void handle_data_processing_single_op_imm(
     }
 }
 
+/**
+ * Assembles a data processing instruction for single operand and two registers
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void handle_data_processing_single_op_reg(
     char *opcode,
     char *rm_str,
@@ -412,6 +470,13 @@ void handle_data_processing_single_op_reg(
     }
 }
 
+/**
+ * Assembles a data processing instruction for single operand
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void assemble_data_processing_single_op_opcode_instruction(
     char *opcode,
     char *line,
