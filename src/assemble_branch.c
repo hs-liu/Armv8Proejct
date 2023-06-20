@@ -9,6 +9,14 @@
 #include "assemble_branch.h"
 #include "utils.h"
 
+/**
+ * Returns the offset of the target address from the current address
+ * 
+ * @param target_str the string containing the target address
+ * @param target_str_len the length of the target string
+ * @param state the assembler state
+ * @return the offset of the target address from the current address
+ */
 int64_t get_target_address_offset(char *target_str, int target_str_len, assembler_state_t *state) {
     uint64_t target_address = 0;
     if (is_symbol(target_str, target_str_len)) {
@@ -33,6 +41,14 @@ int64_t get_target_address_offset(char *target_str, int target_str_len, assemble
     return (target_address - (state->base_address + state->address)) / WORD_SIZE_BYTES;
 }
 
+/**
+ * Assembles an unconditional branch instruction
+ * 
+ * @param target_str the string containing the target address
+ * @param target_str_len the length of the target string
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void assemble_unconditional_branch(char *target_str, int target_str_len, char *line, assembler_state_t *state) {
     uint64_t instruction = 0;
     SET_BITS(instruction, ENCODING_OFFSET, ENCODING_SIZE, UNCON_BRANCH_VALUE);
@@ -41,6 +57,13 @@ void assemble_unconditional_branch(char *target_str, int target_str_len, char *l
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
 
+/**
+ * Assembles a register branch instruction
+ * 
+ * @param target_str the string containing the target register
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void assemble_reg_branch(char *target_str, assembler_state_t *state) {
     uint64_t instruction = 0;
     SET_BITS(instruction, ENCODING_OFFSET, ENCODING_SIZE, REGISTER_BRANCH_VALUE);
@@ -55,6 +78,15 @@ void assemble_reg_branch(char *target_str, assembler_state_t *state) {
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
 
+/**
+ * Assembles a conditional branch instruction
+ * 
+ * @param opcode the opcode of the instruction
+ * @param target_str the string containing the target address
+ * @param target_str_len the length of the target string
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void assemble_cond_branch(char *opcode, char *target_str, int target_str_len, assembler_state_t *state) {
     uint64_t instruction = 0;
     SET_BITS(instruction, ENCODING_OFFSET, ENCODING_SIZE, CON_BRANCH_VALUE);
@@ -92,6 +124,13 @@ void assemble_cond_branch(char *opcode, char *target_str, int target_str_len, as
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
 
+/**
+ * Assembles a branch instruction
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void assemble_branch_instruction(char *opcode, char *line, assembler_state_t *state) {
     char *target_str = strtok(NULL, " ");
     int target_str_len;
