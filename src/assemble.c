@@ -111,6 +111,7 @@ void read_file(FILE *fp_in, process_line_fn process_line, void *data) {
     int len = strlen(buffer);
     if (buffer[len - 1] != '\n') {
       fprintf(stderr, "Line too long! %d\n", lineNum);
+      fprintf(stderr, "%s\n", buffer);
       fprintf(stderr, "Exiting!\n");
       exit(EXIT_FAILURE);
     }

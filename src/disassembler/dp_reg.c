@@ -64,6 +64,7 @@ void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
     char op_str[5];
     switch (opc) {
         case ADD_OPC:
+            strcpy(op_str, "add");
             break;
         case SUB_OPC:
             strcpy(op_str, "sub");
@@ -118,10 +119,10 @@ void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
                 strcpy(op_str, "orr");
                 break;
             case EON_OPC:
-            strcpy(op_str, "eon");
+                strcpy(op_str, "eor");
                 break;
             case ANDS_OPC:
-            strcpy(op_str, "ands");
+                strcpy(op_str, "ands");
                 break;
             default:
                 fprintf(stderr, "Illegal instruction: invalid opc value\n");

@@ -1,0 +1,7 @@
+ldr x0, #12
+ldr x1, #20
+b 0x18
+.int 0xf
+.int 0xa
+.int 0xb
+and x0, x0, x0
