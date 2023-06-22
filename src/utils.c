@@ -118,7 +118,7 @@ void build_symbol_table(char *line, void *data) {
     // Add symbol to symbol table
     char *symbol = line;
     symbol[len - 1] = '\0';
-    hashmap_set(state->symbol_table, symbol, state->address);
+    hashmap_set(state->symbol_table, symbol, state->base_address + state->address);
   } else {
     // Increment address
     state->address += WORD_SIZE_BYTES;
