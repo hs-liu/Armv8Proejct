@@ -7,6 +7,16 @@
 #include "disassemble.h"
 #include "data_trans.h"
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param imm12 the immediate value
+ * @param xn the register number of the base register
+ * @param rt the register number of the destination/source register
+ * @param l the load/store bit
+ * @param sf the size bit
+ */
 void sdt_uimm(FILE *fp, uint64_t imm12, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf) {
     assert(l == LOAD_L || l == STORE_L);
     assert(sf == SF_32 || sf == SF_64);
@@ -28,6 +38,16 @@ void sdt_uimm(FILE *fp, uint64_t imm12, uint8_t xn, uint8_t rt, uint8_t l, uint8
     }
 }
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param xm the register number of the offset register
+ * @param xn the register number of the base register
+ * @param rt the register number of the destination/source register
+ * @param l the load/store bit
+ * @param sf the size bit
+ */
 void sdt_regoffset(FILE *fp, uint8_t xm, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf) {
     assert(l == LOAD_L || l == STORE_L);
     assert(sf == SF_32 || sf == SF_64);
@@ -40,6 +60,16 @@ void sdt_regoffset(FILE *fp, uint8_t xm, uint8_t xn, uint8_t rt, uint8_t l, uint
     }
 }
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param simm9 the immediate value
+ * @param xn the register number of the base register
+ * @param rt the register number of the destination/source register
+ * @param l the load/store bit
+ * @param sf the size bit
+ */
 void sdt_preind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf) {
     assert(l == LOAD_L || l == STORE_L);
     assert(sf == SF_32 || sf == SF_64);
@@ -53,6 +83,16 @@ void sdt_preind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint
     }
 }
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param simm9 the immediate value
+ * @param xn the register number of the base register
+ * @param rt the register number of the destination/source register
+ * @param l the load/store bit
+ * @param sf the size bit
+ */
 void sdt_postind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf) {
     assert(l == LOAD_L || l == STORE_L);
     assert(sf == SF_32 || sf == SF_64);
@@ -66,6 +106,16 @@ void sdt_postind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uin
     }
 }
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param simm9 the immediate value
+ * @param xn the register number of the base register
+ * @param rt the register number of the destination/source register
+ * @param l the load/store bit
+ * @param sf the size bit
+ */
 void execute_load_literal(FILE *fp, reg_t *PC, uint32_t instruction, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     char rt_type = (sf == SF_32) ? 'w' : 'x';
@@ -76,6 +126,13 @@ void execute_load_literal(FILE *fp, reg_t *PC, uint32_t instruction, uint8_t sf)
     fprintf(fp, "ldr %c%d, #%ld\n", rt_type, rt, PC->X + simm19);
 }
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param instruction the instruction to execute
+ * @param sf the size bit
+ */
 void execute_sdt(FILE *fp,  uint32_t instruction, uint8_t sf) {
     uint8_t rt = SELECT_BITS(instruction, DT_RT_OFFSET, DT_RT_SIZE);
     uint8_t xn = SELECT_BITS(instruction, SDT_XN_OFFSET, SDT_XN_SIZE);

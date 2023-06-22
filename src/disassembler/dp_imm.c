@@ -8,6 +8,17 @@
 #include "disassemble.h"
 #include "dp_imm.h"
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param op_string the string to print
+ * @param dest the destination register
+ * @param src1 the first source register
+ * @param imm the immediate value
+ * @param sh the shift bit
+ * @param sf the size bit
+ */
 
 void handle_imm_arithmetic(FILE* fp, char* op_string, uint8_t dest, uint8_t src1, uint64_t imm, bool sh, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
@@ -18,17 +29,19 @@ void handle_imm_arithmetic(FILE* fp, char* op_string, uint8_t dest, uint8_t src1
     }
 }
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param op_string the string to print
+ * @param rd the destination register
+ * @param imm the immediate value
+ * @param shift_string the shift string
+ * @param hw the halfword bit
+ * @param sf the size bit 
+ */
 void handle_mov(FILE* fp, char* op_string, uint8_t rd, uint64_t imm, char *shift_string, uint8_t hw,uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
-    // if (strcmp(op_string,"movz") == 0 && hw == 0) {
-    //     if (sf == SF_32) {
-    //         fprintf(fp, "mov w%d, #0x%lx\n", rd, imm);
-    //         return;
-    //     } else {
-    //         fprintf(fp, "mov x%d, #0x%lx\n", rd, imm);
-    //         return;
-    //     }
-    // }
     if (sf == SF_32) {
         fprintf(fp, "%s w%d, #0x%lx, %s #%d\n", op_string, rd, imm, shift_string, 16 * hw);
     } else {
@@ -36,6 +49,13 @@ void handle_mov(FILE* fp, char* op_string, uint8_t rd, uint64_t imm, char *shift
     }
 
 }
+
+/**
+ * disassembles a dpimm instruction
+ * 
+ * @param fp the file to print to
+ * @param instruction the instruction to disassemble
+*/
 
 void disassemble_dpimm_instruction(FILE* fp, uint32_t instruction) {
     uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
