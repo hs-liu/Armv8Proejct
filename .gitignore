@@ -32,3 +32,6 @@ assemble
 *.vrb
 *.nav
 *.toc
+
+#ignore generated assembly files
+*.s

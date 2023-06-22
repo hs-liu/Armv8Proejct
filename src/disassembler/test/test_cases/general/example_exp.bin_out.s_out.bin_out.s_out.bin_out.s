@@ -1,5 +1,0 @@
-b 0xc
-.int 0x3f
-.int 0x0
-ldr x0, #4
-and x0, x0, x0
