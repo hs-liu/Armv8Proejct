@@ -3,8 +3,6 @@ import os
 import glob
 
 TEST_BINARIES_DIR = './test_cases'
-# OUT_S_FILES_DIR = './disassembled'
-# OUT_BIN_FILES_DIR = './reassembled'
 EXECUTABLES_DIR = './solution'
 DISASM_PATH = os.path.join(EXECUTABLES_DIR, 'disassemble')
 ASM_PATH = os.path.join(EXECUTABLES_DIR, 'assemble')
