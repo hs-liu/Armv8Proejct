@@ -27,7 +27,6 @@ def assemble(s_file_path, bin_out_path):
    
 
 def main():
-    # test_bins = os.listdir(TEST_BINARIES_DIR)
     test_bins = glob.glob(TEST_BINARIES_DIR + '/**/*.bin', recursive=True)
     print(test_bins)
 
