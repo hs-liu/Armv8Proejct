@@ -51,8 +51,9 @@ const char *special[] = {
   ".int", "nop",
 };
 
-// Strip line of trailing and leading whitespace
-// returns resulting length of the line in second argument
+/*
+ * @brief Strips leading and trailing whitespace from a line
+*/
 char *strip_line(char *line, int *res_len) {
   int len = strlen(line);
   
@@ -78,6 +79,13 @@ char *strip_line(char *line, int *res_len) {
   return line;
 }
 
+/**
+ * @brief Checks if the opcode is a data processing instruction
+ * 
+ * @param opcode 
+ * @return true 
+ * @return false 
+ */
 bool is_immediate(char *operand) {
   return operand[0] == '#';
 }
@@ -98,6 +106,14 @@ bool is_symbol(char *symbol, int len) {
   return true;
 }
 
+/*
+  * @brief Checks if the line is a symbol declaration
+  * 
+  * @param line 
+  * @param len 
+  * @return true 
+  * @return false
+*/
 bool is_symbol_declaration(char *line, int len) {
   return is_symbol(line, len - 1) && line[len - 1] == ':';
 }
@@ -125,6 +141,9 @@ void build_symbol_table(char *line, void *data) {
   }
 }
 
+/*
+ * Checks if the opcode is a data processing instruction
+ */
 bool is_data_processing_multiply_opcode(char *opcode) {
   for (int i = 0; i < sizeof(data_processing_multiply_opcodes) / sizeof(char *); i++) {
     if (strcmp(opcode, data_processing_multiply_opcodes[i]) == 0) {
@@ -134,6 +153,9 @@ bool is_data_processing_multiply_opcode(char *opcode) {
   return false;
 }
 
+/*
+* Checks if the opcode is an arithmetic instruction
+*/
 bool is_data_processing_arithmetic_opcode(char *opcode) {
   for (int i = 0; i < sizeof(data_processing_arithmetic_opcodes) / sizeof(char *); i++) {
     if (strcmp(opcode, data_processing_arithmetic_opcodes[i]) == 0) {
@@ -143,6 +165,9 @@ bool is_data_processing_arithmetic_opcode(char *opcode) {
   return false;
 }
 
+/*
+* Checks if the opcode is a bit logic instruction
+*/
 bool is_data_processing_bit_logic_opcode(char *opcode) {
   for (int i = 0; i < sizeof(data_processing_bit_logic_opcodes) / sizeof(char *); i++) {
     if (strcmp(opcode, data_processing_bit_logic_opcodes[i]) == 0) {
@@ -152,11 +177,18 @@ bool is_data_processing_bit_logic_opcode(char *opcode) {
   return false;
 }
 
+/*
+* Checks if the opcode is part of an instruction that takes two operands
+*/
 bool is_data_processing_two_op_opcode(char *opcode) {
   return is_data_processing_arithmetic_opcode(opcode) ||
          is_data_processing_bit_logic_opcode(opcode);
 }
 
+/*
+* Checks if the opcode is part of an instruction that takes one operand
+* and does not have a destination register
+*/
 bool is_data_processing_single_op_alias_opcode(char *opcode) {
   for (int i = 0; i < sizeof(data_processing_single_op_alias_opcodes) / sizeof(char *); i++) {
     if (strcmp(opcode, data_processing_single_op_alias_opcodes[i]) == 0) {
@@ -166,6 +198,10 @@ bool is_data_processing_single_op_alias_opcode(char *opcode) {
   return false;
 }
 
+/*
+* Checks if the opcode is part of an instruction that takes one operand
+* and is a wide move
+*/
 bool is_data_processing_wide_move_opcode(char *opcode) {
   for (int i = 0; i < sizeof(data_processing_wide_move_opcodes) / sizeof(char *); i++) {
     if (strcmp(opcode, data_processing_wide_move_opcodes[i]) == 0) {
@@ -175,11 +211,18 @@ bool is_data_processing_wide_move_opcode(char *opcode) {
   return false;
 }
 
+/*
+* Checks if the opcode is part of an instruction that takes one operand
+*/
 bool is_data_processing_single_op_opcode(char *opcode) {
   return is_data_processing_single_op_alias_opcode(opcode) ||
     is_data_processing_wide_move_opcode(opcode);
 }
 
+/*
+* Checks if the opcode is part of an instruction that takes two operands
+* and does not have a destination register
+*/
 bool is_data_processing_two_op_no_dest_opcode(char *opcode) {
   for (int i = 0; i < sizeof(data_processing_two_op_no_dest_opcodes) / sizeof(char *); i++) {
     if (strcmp(opcode, data_processing_two_op_no_dest_opcodes[i]) == 0) {
@@ -189,8 +232,10 @@ bool is_data_processing_two_op_no_dest_opcode(char *opcode) {
   return false;
 }
 
-// Takes in null terminated opcode and
-// returns true if it is a data processing opcode
+/*
+* Takes in null terminated opcode and
+* returns true if it is a data processing opcode
+*/
 bool is_data_processing_opcode(char *opcode) {
   return is_data_processing_multiply_opcode(opcode) ||
     is_data_processing_two_op_opcode(opcode) ||
@@ -198,6 +243,9 @@ bool is_data_processing_opcode(char *opcode) {
     is_data_processing_two_op_no_dest_opcode(opcode);
 }
 
+/*
+* Checks if the opcode is a branch instruction
+*/
 bool is_branch_opcode(char *opcode) {
   for (int i = 0; i < sizeof(branch_opcodes) / sizeof(char *); i++) {
     if (strcmp(opcode, branch_opcodes[i]) == 0) {
@@ -207,6 +255,9 @@ bool is_branch_opcode(char *opcode) {
   return false;
 }
 
+/*
+* Checks if the opcode is a load or store instruction
+*/
 bool is_load_store_opcode(char *opcode) {
   for (int i = 0; i < sizeof(load_store_opcodes) / sizeof(char *); i++) {
     if (strcmp(opcode, load_store_opcodes[i]) == 0) {
@@ -216,6 +267,9 @@ bool is_load_store_opcode(char *opcode) {
   return false;
 }
 
+/*
+* Checks if the opcode is a special instruction or directive
+*/
 bool is_special_instruction(char *opcode) {
   for (int i = 0; i < sizeof(special) / sizeof(char *); i++) {
     if (strcmp(opcode, special[i]) == 0) {
@@ -225,6 +279,10 @@ bool is_special_instruction(char *opcode) {
   return false;
 }
 
+/*
+* Returns the register number of the given register string
+* and sets the sf to the correct value based on the size of the register
+*/
 uint8_t get_register(char *reg_str, uint8_t *sf) {
   if (reg_str[0] != 'x' && reg_str[0] != 'w') {
     fprintf(stderr, "Invalid register: %s\n", reg_str);
