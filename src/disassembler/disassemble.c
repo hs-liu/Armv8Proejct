@@ -26,7 +26,7 @@ void print_usage(void) {
  * 
  * @param file_name the name of the binary file
  */
-void load_bin_to_memory(char *file_name) {
+int load_bin_to_memory(char *file_name) {
     FILE *fp = fopen(file_name, "rb");
     if (fp == NULL) {
         fprintf(stderr, "Couldn't open the file %s\n", file_name);
@@ -35,9 +35,9 @@ void load_bin_to_memory(char *file_name) {
     }
 
     int fseek_res = fseek(fp, 0L, SEEK_END);
-    long file_size;
+    int file_size;
 
-    if (fseek_res != 0 || (file_size = ftell(fp)) == -1) {
+    if (fseek_res != 0 || (file_size = (int) ftell(fp)) == -1) {
         fprintf(stderr, "Couldn't check the size of the file %s\n", file_name);
         fprintf(stderr, "Exiting!\n");
         exit(EXIT_FAILURE);
@@ -56,6 +56,7 @@ void load_bin_to_memory(char *file_name) {
     }
 
     fread(main_memory, sizeof(char), MEMORY_CAPACITY, fp);
+    return file_size;
 }
 
 /**
@@ -104,13 +105,12 @@ void write_word(uint64_t address, uint64_t word, uint8_t sf) {
 }
 
 /**
- * Disassembles a cycle
+ * Disassembles a word into a single instruction 
  * 
  * @param PC the program counter
  * @param fp the file to write to
- * @return true if the cycle was successfully disassembled, false otherwise
  */
-bool disassemble_cycle(reg_t *PC, FILE* fp) {
+void disassemble_cycle(reg_t *PC, FILE* fp) {
     // Fetch
     uint32_t instruction = fetch_word(PC->X, SF_32);
 
@@ -120,26 +120,17 @@ bool disassemble_cycle(reg_t *PC, FILE* fp) {
     // fprintf(fp, "0x%lx: ", PC->X);
     if (instruction == NOP_INSTRUCTION) {
         fprintf(fp, "nop\n");
-        PC->X += WORD_SIZE_BYTES;
-        return true;
     }
-
-    if (instruction == HALT_INSTRUCTION) {
+    else if (instruction == HALT_INSTRUCTION) {
         fprintf(fp, "and x0, x0, x0\n");
-        return false;
     }
-
-    if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
+    else if (CHECK_BITS(op0, OP0_DPIMM_MASK, OP0_DPIMM_VALUE)) {
         disassemble_dpimm_instruction(fp, instruction);
-        PC->X += WORD_SIZE_BYTES;
     }
-
-    if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
+    else if (CHECK_BITS(op0, OP0_DPREG_MASK, OP0_DPREG_VALUE)) {
         disassemble_dpreg_instruction(fp, instruction);
-        PC->X += WORD_SIZE_BYTES;
     }
-
-    if (CHECK_BITS(op0, OP0_LS_MASK, OP0_LS_VALUE)) {
+    else if (CHECK_BITS(op0, OP0_LS_MASK, OP0_LS_VALUE)) {
         uint8_t sf = SELECT_BITS(instruction, DT_SF_OFFSET, DT_SF_SIZE);
 
         uint16_t opcode = SELECT_BITS(instruction, DT_OPCODE_OFFSET, DT_OPCODE_SIZE);
@@ -147,17 +138,16 @@ bool disassemble_cycle(reg_t *PC, FILE* fp) {
             execute_sdt(fp, instruction, sf);
         }
         if (CHECK_BITS(opcode, LOADLIT_MASK, LOADLIT_VALUE)) {
-            execute_load_literal(fp, instruction, sf);
+            execute_load_literal(fp, PC, instruction, sf);
         }
-        PC->X += WORD_SIZE_BYTES;
     }
-
-    if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
+    else if (CHECK_BITS(op0, OP0_BRANCH_MASK, OP0_BRANCH_VALUE)) {
         branch_instruction(fp, PC, instruction);
-        PC->X += WORD_SIZE_BYTES;
     }
-
-    return true;
+    else {
+        fprintf(fp, ".int 0x%x\n", instruction);
+    }
+    PC->X += WORD_SIZE_BYTES;
 }
 
 int main(int argc, char **argv) {
@@ -181,12 +171,11 @@ int main(int argc, char **argv) {
 
     reg_t PC;
     PC.X = 0;
-    load_bin_to_memory(argv[1]);
+    int file_size = load_bin_to_memory(argv[1]);
 
-    bool continue_running = true;
-    do {
-        continue_running = disassemble_cycle(&PC, output_fp);
-    } while (continue_running);
+    while (PC.X < file_size) {
+        disassemble_cycle(&PC, output_fp);
+    };
 
     return EXIT_SUCCESS;
 }

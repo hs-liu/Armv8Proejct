@@ -9,33 +9,74 @@
 #include "dp_reg.h"
 #include "dp_imm.h"
 
+/**
+ * disassemble bit logic instruction
+ * 
+ * @param fp the file to print to
+ * @param op_string the string to print
+ * @param rd the destination register
+ * @param rn the first source register
+ * @param rm the second source register
+ * @param shift_str the shift string
+ * @param shift_amount the shift amount
+ * @param sf the size bit
+*/
 void handle_bit_logic(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, char *shift_str, uint8_t shift_amount, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, w%d, w%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+        fprintf(fp, "%s w%d, w%d, w%ld, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     } else {
-        fprintf(fp, "%s x%d, x%d, x%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+        fprintf(fp, "%s x%d, x%d, x%ld, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     }
 }
 
+/**
+ * disassemble arithmetic instruction
+ * 
+ * @param fp the file to print to
+ * @param op_string the string to print
+ * @param rd the destination register
+ * @param rn the first source register
+ * @param rm the second source register
+ * @param shift_str the shift string
+ * @param shift_amount the shift amount
+ * @param sf the size bit
+*/
 void handle_reg_arithmetic(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, char *shift_str, uint8_t shift_amount, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, w%d, w%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+        fprintf(fp, "%s w%d, w%d, w%ld, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     } else {
-        fprintf(fp, "%s x%d, x%d, x%d, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
+        fprintf(fp, "%s x%d, x%d, x%ld, %s #%d\n", op_string, rd, rn, rm, shift_str, shift_amount);
     }
 }
 
+/**
+ * disassemble multiply instruction
+ * 
+ * @param fp the file to print to
+ * @param op_string the string to print
+ * @param rd the destination register
+ * @param rn the first source register
+ * @param rm the second source register
+ * @param ra the third source register
+ * @param sf the size bit
+*/
 void handle_multiply(FILE* fp, char *op_string, uint8_t rd, uint8_t rn, uint64_t rm, uint8_t ra, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, w%d, w%d, w%d\n", op_string, rd, rn, rm, ra);
+        fprintf(fp, "%s w%d, w%d, w%ld, w%d\n", op_string, rd, rn, rm, ra);
     } else {
-        fprintf(fp, "%s x%d, x%d, x%d, x%d\n", op_string, rd, rn, rm, ra);
+        fprintf(fp, "%s x%d, x%d, x%ld, x%d\n", op_string, rd, rn, rm, ra);
     }
 }
 
+/**
+ * delegate to the correct function to disassemble the arithmetic instruction
+ * 
+ * @param fp the file to print to
+ * @param instruction the instruction to disassemble
+*/
 void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
     uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);
     uint8_t opc = SELECT_BITS(instruction, REG_OPC_OFFSET, REG_OPC_SIZE);
@@ -45,7 +86,6 @@ void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
     uint8_t rn = SELECT_BITS(instruction, REG_RN_OFFSET, REG_RN_SIZE);
     uint8_t rd = SELECT_BITS(instruction, REG_RD_OFFSET, REG_RD_SIZE);
     uint8_t shift = SELECT_BITS(opr, SHIFT_OFFSET, SHIFT_SIZE);
-    uint64_t op2;
     char shift_str[4];
     switch (shift) {
         case LSL_VALUE:
@@ -65,6 +105,7 @@ void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
     char op_str[5];
     switch (opc) {
         case ADD_OPC:
+            strcpy(op_str, "add");
             break;
         case SUB_OPC:
             strcpy(op_str, "sub");
@@ -83,6 +124,12 @@ void disassemble_arithmetic_instruction(FILE* fp, uint32_t instruction) {
     handle_reg_arithmetic(fp, op_str, rd, rn, rm, shift_str, operand, sf);
 }
 
+/**
+ * delegate to the correct function to disassemble the bit logic instruction
+ * 
+ * @param fp the file to print to
+ * @param instruction the instruction to disassemble
+*/
 void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
     uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);
     uint8_t opc = SELECT_BITS(instruction, REG_OPC_OFFSET, REG_OPC_SIZE);
@@ -119,10 +166,10 @@ void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
                 strcpy(op_str, "orr");
                 break;
             case EON_OPC:
-            strcpy(op_str, "eon");
+                strcpy(op_str, "eor");
                 break;
             case ANDS_OPC:
-            strcpy(op_str, "ands");
+                strcpy(op_str, "ands");
                 break;
             default:
                 fprintf(stderr, "Illegal instruction: invalid opc value\n");
@@ -154,6 +201,12 @@ void disassemble_bit_logic_instruction(FILE* fp, uint32_t instruction) {
         handle_bit_logic(fp, op_str, rd, rn, rm, shift_str, operand, sf);
 }
 
+/**
+ * delegate to the correct function to disassemble the multiply instruction
+ * 
+ * @param fp the file to print to
+ * @param instruction the instruction to disassemble
+*/
 void disassemble_multiply_instruction(FILE* fp, uint32_t instruction) {
     uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);
     uint8_t rm = SELECT_BITS(instruction, REG_RM_OFFSET, REG_RM_SIZE);
@@ -172,6 +225,12 @@ void disassemble_multiply_instruction(FILE* fp, uint32_t instruction) {
 
 }
 
+/**
+ * delegate to the correct function to disassemble the dpreg instruction
+ * 
+ * @param fp the file to print to
+ * @param instruction the instruction to disassemble
+*/
 void disassemble_dpreg_instruction(FILE* fp, uint32_t instruction) {
     assert(SELECT_BITS(instruction, DPREG_OFFSET, DPREG_SIZE) == 0x5);
     uint8_t sf = SELECT_BITS(instruction, REG_SF_OFFSET, REG_SF_SIZE);

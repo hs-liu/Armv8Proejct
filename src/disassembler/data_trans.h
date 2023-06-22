@@ -88,5 +88,5 @@ void sdt_uimm(FILE *fp, uint64_t imm12, uint8_t xn, uint8_t rt, uint8_t l, uint8
 void sdt_regoffset(FILE *fp, uint8_t xm, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
 void sdt_preind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
 void sdt_postind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint8_t sf);
-void execute_load_literal(FILE *fp, uint32_t instruction, uint8_t sf);
+void execute_load_literal(FILE *fp, reg_t *PC, uint32_t instruction, uint8_t sf);
 void execute_sdt(FILE *fp, uint32_t instruction, uint8_t sf);

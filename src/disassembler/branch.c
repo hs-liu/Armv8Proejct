@@ -7,6 +7,13 @@
 #include "disassemble.h"
 #include "branch.h"
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param PC the program counter
+ * @param instruction the instruction to disassemble
+ */
 void branch_instruction(FILE *fp, reg_t *PC, uint32_t instruction) {
     int64_t simm19;
     int64_t simm26;

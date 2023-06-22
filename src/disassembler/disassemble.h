@@ -50,7 +50,7 @@ typedef struct {
 void setup(state_t *cpu_state);
 void print_usage(void);
 void set_NZ_flags(state_t *cpu_state, uint64_t result, uint8_t sf);
-void load_bin_to_memory(char *file_name);
+int load_bin_to_memory(char *file_name);
 uint64_t fetch_word(uint64_t address, uint8_t sf);
 void write_word(uint64_t address, uint64_t word, uint8_t sf);
-bool disassemble_cycle(reg_t *PC, FILE* fp);
+void disassemble_cycle(reg_t *PC, FILE* fp);

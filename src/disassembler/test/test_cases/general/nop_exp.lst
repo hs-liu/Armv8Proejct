@@ -1,0 +1,10 @@
+
+test/expected/test/test_cases/general/nop_exp.bin:     file format binary
+
+
+Disassembly of section .data:
+
+0000000000000000 <.data>:
+   0:	d503201f 	nop
+   4:	d503201f 	nop
+   8:	8a000000 	and	x0, x0, x0

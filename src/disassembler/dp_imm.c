@@ -8,34 +8,54 @@
 #include "disassemble.h"
 #include "dp_imm.h"
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param op_string the string to print
+ * @param dest the destination register
+ * @param src1 the first source register
+ * @param imm the immediate value
+ * @param sh the shift bit
+ * @param sf the size bit
+ */
 
 void handle_imm_arithmetic(FILE* fp, char* op_string, uint8_t dest, uint8_t src1, uint64_t imm, bool sh, uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, w%d, 0x%llx, lsl #%d\n", op_string, dest, src1, imm, sh ? 12 : 0);
+        fprintf(fp, "%s w%d, w%d, #0x%lx, lsl #%d\n", op_string, dest, src1, imm, sh ? 12 : 0);
     } else {
-        fprintf(fp, "%s x%d, x%d, 0x%llx, lsl #%d\n", op_string, dest, src1, imm, sh ? 12 : 0);
+        fprintf(fp, "%s x%d, x%d, #0x%lx, lsl #%d\n", op_string, dest, src1, imm, sh ? 12 : 0);
     }
 }
 
+/**
+ * Prints the usage of the program to stderr
+ * 
+ * @param fp the file to print to
+ * @param op_string the string to print
+ * @param rd the destination register
+ * @param imm the immediate value
+ * @param shift_string the shift string
+ * @param hw the halfword bit
+ * @param sf the size bit 
+ */
 void handle_mov(FILE* fp, char* op_string, uint8_t rd, uint64_t imm, char *shift_string, uint8_t hw,uint8_t sf) {
     assert(sf == SF_32 || sf == SF_64);
-    if (strcmp(op_string,"movz") == 0 && hw == 0) {
-        if (sf == SF_32) {
-            fprintf(fp, "mov w%d, #0x%llx\n", rd, imm);
-            return;
-        } else {
-            fprintf(fp, "mov x%d, #0x%llx\n", rd, imm);
-            return;
-        }
-    }
     if (sf == SF_32) {
-        fprintf(fp, "%s w%d, 0x%llx, %s #%d\n", op_string, rd, imm, shift_string, 16 * hw);
+        fprintf(fp, "%s w%d, #0x%lx, %s #%d\n", op_string, rd, imm, shift_string, 16 * hw);
     } else {
-        fprintf(fp, "%s x%d, 0x%llx, %s #%d\n", op_string, rd, imm, shift_string, 16 * hw);
+        fprintf(fp, "%s x%d, #0x%lx, %s #%d\n", op_string, rd, imm, shift_string, 16 * hw);
     }
 
 }
+
+/**
+ * disassembles a dpimm instruction
+ * 
+ * @param fp the file to print to
+ * @param instruction the instruction to disassemble
+*/
 
 void disassemble_dpimm_instruction(FILE* fp, uint32_t instruction) {
     uint8_t sf = SELECT_BITS(instruction, IMM_SF_OFFSET, IMM_SF_SIZE);
@@ -54,14 +74,15 @@ void disassemble_dpimm_instruction(FILE* fp, uint32_t instruction) {
         switch (opc) {
             case ADD_OPC:
                 strcpy(op_str, "add");
+                break;
             case ADDS_OPC:
-            strcpy(op_str, "adds");
+                strcpy(op_str, "adds");
                 break;
             case SUB_OPC:
-            strcpy(op_str, "sub");
+                strcpy(op_str, "sub");
                 break;
             case SUBS_OPC:
-            strcpy(op_str, "subs");
+                strcpy(op_str, "subs");
                 break;
         }
         handle_imm_arithmetic(fp, op_str, rd, rn, imm12, sh, sf);
@@ -75,13 +96,13 @@ void disassemble_dpimm_instruction(FILE* fp, uint32_t instruction) {
         char op_str[5];
         switch (opc) {
             case MOVN_OPC:
-            strcpy(op_str, "movn");
+                strcpy(op_str, "movn");
                 break;
             case MOVZ_OPC:
-            strcpy(op_str, "movz");
+                strcpy(op_str, "movz");
                 break;
             case MOVK_OPC:
-            strcpy(op_str, "movk");
+                strcpy(op_str, "movk");
                 break;
         }
         handle_mov(fp, op_str, rd, imm16, "lsl", hw, sf);
