@@ -9,7 +9,7 @@
 #include "dp_imm.h"
 
 /**
- * Prints the usage of the program to stderr
+ * disassemble arithmetic instructions for instructions involving immediate value operand
  * 
  * @param fp the file to print to
  * @param op_string the string to print
@@ -30,7 +30,7 @@ void handle_imm_arithmetic(FILE* fp, char* op_string, uint8_t dest, uint8_t src1
 }
 
 /**
- * Prints the usage of the program to stderr
+ * disassemble mov instructions
  * 
  * @param fp the file to print to
  * @param op_string the string to print
@@ -51,7 +51,7 @@ void handle_mov(FILE* fp, char* op_string, uint8_t rd, uint64_t imm, char *shift
 }
 
 /**
- * disassembles a dpimm instruction
+ * delegates to the correct function to disassemble the instruction
  * 
  * @param fp the file to print to
  * @param instruction the instruction to disassemble

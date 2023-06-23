@@ -8,7 +8,7 @@
 #include "branch.h"
 
 /**
- * Prints the usage of the program to stderr
+ * disassemble branch instructions
  * 
  * @param fp the file to print to
  * @param PC the program counter
