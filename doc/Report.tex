@@ -1,21 +1,226 @@
-\documentclass[11pt]{article}
+\documentclass{article}
 
-\usepackage{fullpage}
+\usepackage{geometry} % Adjust page layout
+\usepackage{graphicx} % Required for inserting images
+\usepackage{hyperref}
+\usepackage{titlesec} %adjust the font size of title
+\usepackage{xcolor}
+\usepackage{changepage}
+\usepackage{setspace}
+\usepackage[utf8]{inputenc}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\usepackage{titlesec}
+\usepackage[figurename=Fig]{caption}
+
+\graphicspath{{images/}}
+
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+
+\urlstyle{same}
+
+\setlength\parindent{0pt}
+\setlength{\parskip}{8pt}
+
+\geometry{
+    % set page layout
+    a4paper,
+    total={170mm,257mm},
+    left=24mm,
+    right=24mm,
+    top=24mm,
+    bottom=24mm
+}
+
+\title{C Project Final Report}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\bfseries}
+\author{hl2622, jhl21, syl121, yz8922}
+\date{June 2023}
 
 \begin{document}
 
-\title{Our Extension...}
-\author{TODO}
+    \maketitle
+    \section{Assembler}
+        In this section, we discuss the structure of our assembler, as well as implementation decisions and challenge.
+    
+        \begin{adjustwidth}{2em}{0pt}
+        
+        \subsection{Structure}
+        
+            Similar to the emulator, we designed our assembler to have a modular structure which allowed us to identify components that we can reuse. We split the assembler up into modules, each consisting of a header file and a source file. Constants that were reused from the emulator code were moved into a new module called "utils". The assembler was broken down into the following modules
+        
+            \begin{itemize}
+                \item \texttt{assemble.c / assemble.h}: contains the main function, as well as the major components of the assembler such as reading the input file and writing to the output file. 
+                \item  \texttt{symbol\_table.c / symbol\_table.h}: implements the hash map abstract data type (ADT) used by the symbol table to store the address of the labels.
+                \item \texttt{assemble\_dt.c / assemble\_dt.h}: contains functions to assemble data transfer instructions that read and write to and from memory, as well as helper functions to check whether certain operands are of certain types.
+                \item \texttt{assemble\_branch.c / assemble\_branch.h}: contains functions to assemble branching instructions, and a helper function to get the offset of a target address from the current address, since some branching instructions are PC-relative. 
+                \item \texttt{assemble\_dp.c / assemble\_dp.h }: contains functions to assemble data processing instructions, as well as aliases of those instructions like \texttt{cmp}, \texttt{cmn}, and \texttt{tst}.
+                \item \texttt{utils.c / utils.h}: contains all the constants, which include the ones reused from the emulator code, as well as functions that are generally useful throughout the assembler, for example \texttt{get\_register} which takes in a string representation of a register and outputs its size and register index.
+            \end{itemize}
+    
+        \subsection{Implementation}
+        
+            We decided to implement a "Two Pass" assembler to keep our code simple. 
+            
+            \textbf{First pass}: On the first pass, the assembler will scan the file for label declarations, then add an entry to the symbol table mapping the address to the label. All other types of instructions and directives are ignored on the first pass, and only used to keep track of the current address. After the first pass, we know how large the generated binary file will need to be, so a buffer with that size is allocated for the assembler to write into on the second pass. 
+        
+            \textbf{Second pass}: Then, the assembler goes back to the start of the input file and reads it line by line again. It then assembles each line of the input file into a 4-byte instruction which it writes into the buffer. After all the instructions have been assembled and written into the buffer, the assembler writes the contents of the buffer into an output file.
+            
+            \textbf{Reducing code duplication}: To reduce code duplication when reading the file, we use function pointers to create higher-order functions. The function which reads the file line by line is given a generic function pointer as an argument. Then, on the first pass, a helper function is passed to this function to build the symbol table. On the second pass, a function called is passed which assembles the different instructions. This way, the same function can be used to read the file line by line on both passes, and the code is more modular since the function to read lines from the input file is distinct from the function which takes in a line and adds an entry to the symbol table.
+            
+        \end{adjustwidth}
+    
+    
+    \section{Mailbox on Raspberry Pi 3}
 
-\maketitle
+        The objective of this section is to control the green LED (ACT) on our given Raspberry Pi 3B to flash in a constant frequency and ensuring it stays in an infinite loop.
+        
+        \begin{adjustwidth}{2em}{0pt}
+        \subsection{Implementation} 
+         
+             \textbf{Using C: }We first wrote our program in C with the intention of using the GCC compiler to generate the relevant assembly code to then be passed to the assembler from Part II. Our plan was to modify the assembly code to ensure it only used instructions allowed by our assembler. However, after completing the C file, we realized that the process of modifying the generated assembly code would be too time-consuming and challenging in comparison to simply rewriting the assembly code from scratch.
+            
+            \textbf{Using assembly: }For the reasons above, we then made the decision to start over again in order to write the required A64 assembly program afresh instead of generating it from C. This allowed us to have direct control over the instructions used, ensuring compliance with the limitations of the specified assembler. We thoroughly analysed the given project specification to fully understand the Mailbox peripheral in order to try and design an efficient assembly program specifically tailored to make the LED blink. This decision also gave us better control of relevant memory addresses needed to operate the LED and requests containing the buffer address to be written to the mailbox.
+    
+        \subsection{Structure}
+        
+            \textbf{Initialisation: }The relevant registers necessary for use in the program are set up under the \textit{start} label by moving the respective addresses of the mailbox's registers, as well as the address of the buffer holding the tag to turn on/off the LED, into the registers \textit{x1-x7}. The use of each register is clearly defined at the top of the file for code readability, and flexibility if we need to modify or add more usage.
+            
+            \textbf{Buffer: }By using labels to represent the buffer and then calculating the address of the label, we eliminated the need to use ‘=’ in our assembly program since it was not included for the assembler in the project specification. Taking into account that the buffer will be partially overwritten by the mailbox response, we used a template to reassign the correct values to the buffer, improving code clarity as it removed the need for literal value assignment in the code and thereby reducing risk of error.
+            
+            \textbf{Loop: }A separate wait loop was used to create a delay of around \textit{1 second} between each time the status of the LED is toggled. We were able to simplify the code through utilization of the natural fall-through execution order in assembly by designing and refactoring each action, reducing the number of conditional branches required.
+    
+        \newpage
+        
+        \subsection{Debugging}
+    
+            Initially, the code would only flash once during the boot process, indicating an error. Due to navigating memory and identifying errors, debugging assembly code proved to be quite difficult. However, we adopted a systematic approach by isolating individual actions to be performed to test each one separately. For example, we would first ensure the action for toggling on the led was successful before adding the next section. This iterative process helped us pinpoint and resolve the errors, ultimately enabling us to complete Part III successfully
+        
+        \end{adjustwidth}
+    
+    \section{Extension}
 
-\section{Introduction}
+        For the extension, we implemented support for inline comments, as well as a disassembler which takes in an assembled binary and returns assembly code.
+        
+        
+        \begin{adjustwidth}{2em}{0pt}
+    
+        \subsection{Support for Inline Comments}
+        
+            \begin{figure}[h]
+            \begin{subfigure}{0.5\textwidth}
+            \includegraphics[width=1.0\linewidth, height=3cm]{image/fig1.png} 
+            \caption{Fig 3.1.0}
+            \end{subfigure}
+            \begin{subfigure}{0.5\textwidth}
+            \includegraphics[width=1.0\linewidth, height=3.5cm]{image/fig2.png}
+            \caption{Fig 3.1.1}
+            \end{subfigure}
+            \end{figure}
+        
+            The support for inline comments \textit{(Fig 3.1.0, Fig 3.1.1)} was very useful for us while writing the assembly code to control the Raspberry Pi green LED light, since it allowed us to comment our assembly code extensively and keep track of which registers are supposed to hold which values. 
+            
+            The code required to extend our assembler to support inline comments was very short since the design of our assembler was already very modular with small functions that dealt with the file line by line, so it was very easy to add in a short 4 line pre-processing function to search for the \texttt{"//"} substring and null-terminate the string early if it exists. 
+            
+            On the other hand, we did not feel that implementing block comments would add significant value to us while writing the assembly code for the Raspberry Pi since we already had inline comments, and the code needed to support the block comments would be more complex since we would have to keep track of whether a particular line starts within a block comment. Since the main focus of our extension was the disassembler, and not the support for comments which we only implemented out of necessity for documenting the assembly code, we did not implement block comments.
+        
+        
+        \subsection{Disassembler}
+    
+            We created a disassembler specifically designed to convert binary files into assembly code. To achieve this, we utilized certain parts of our emulator code to help decode instructions. However, we realized that we couldn't reuse most of the emulator code. Unlike the emulator, the disassembler requires us to manually write the entire assembly code instead of relying on pre-calculated functions like register shifting.
+            
+            Despite this challenge, we developed generic functions that can handle multiple instructions, reducing code repetition and making our code easier to read. Another difficulty we encountered was the loss of branch label information in binary files. As a result, the disassembled code provides absolute addresses for branches instead of specific labels. 
+        
+            Similar to our emulator, we divided our code into different modules: 
+            \begin{itemize}
+                \item \texttt{disassembler.c / disassembler.h}: 
+               We have a singular program counter (PC) as the state, as we do not need to store the state of anything else. This counter is used for branching instructions where we need to calculate the absolute address of the branches. The actual disassembly of code is delegated to other modules.
+                \item  \texttt{dp\_reg.c / dp\_reg.h}: contains disassembly of data processing operations between only registers.
+                \item \texttt{dp\_imm.c / dp\_imm.h}: contains disassembly of data processing operations between registers and an immediate value.
+                \item \texttt{branch.c / branch.h}: contains disassembly of branching instructions.
+                \item \texttt{data\_trans.c / data\_trans.h }: contains disassembly of instructions that read or write from/to memory.
+            \end{itemize}
+        
+        
+            We disassemble all of these components and generate an output file. The output file can be specified as an argument in our main function.
+        
+        \subsection{Testing the disassembler}
+        
+            \begin{figure}[h]
+            \begin{subfigure} {1.0\linewidth}
+                \includegraphics[width=1.0\linewidth]{image/fig3.png} 
+                \caption{Fig 3.3.0}
+            \end{subfigure}
+            \end{figure}
+        
+            To test the functionality of our disassembler, we utilised the binary files provided by the test suites given by the department. Our testing process involved multiple steps. Firstly, we employed our disassembler to convert the binary files into assembly code. Next, we utilised assembler to assemble the assembly code back into binary files. By comparing the resulting binary files, we assessed the performance and accuracy of our disassembler.
+        
+            To automate this testing procedure, we developed a Python script that encompassed 593 test cases. This script facilitated the seamless execution of the entire testing process. During these tests, we encountered and resolved various bugs in our disassembler code, ensuring its reliability and functionality.
+    
+     
+        \subsection{Effectiveness of our testing}
+            During the rigorous testing phase, we conducted a comprehensive evaluation of our disassembler, meticulously refining its performance and instilling confidence in its operation. With an extensive suite of 593 test cases encompassing various assembly functions, we have developed a considerable level of confidence in the reliability of our disassembler.
+            
+            However, it is important to note that most of these test cases consist of assembly codes spanning approximately 3 to 7 lines. We did not specifically test large binary files containing thousands of lines of assembly code. Although we anticipate minimal impact since each instruction is handled individually and executes pure functions, it remains an area where further testing could be beneficial.
+            
+            Overall, our confidence in the testing process stems from both utilising the department-provided test cases and generating our own tests based on them. This approach ensures coverage of diverse functions, and we are pleased to report that our disassembler successfully passes each test case, reinforcing our confidence in its performance.
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+        \end{adjustwidth}
+    
+    \section{Group Reflection}
 
+        \begin{adjustwidth}{2em}{0pt}
+    
+        \subsection{Communication and Collaboration}
+    
+        We believe that we adopted effective strategies of communication such as using our Telegram groupchat to keep each other posted about each other progress and our deadlines. We also worked together offline in labs to discuss the specification and debug our code. 
+    
+        After carefully evaluating the difficulty of the project and individual capabilities, we decided to split our team into two pairs, where each group tackled a separate section of the project. This allowed us to make progress simultaneously, which significantly improved our productivity before embarking on the next stage of the project.
+        
+        \subsection{Successful Strategies} 
+        
+            We would like to maintain our current collaboration methods, namely version control system and pair programming, for future programming projects. 
+            
+            \textbf{Version control system:} Git enables seamless collaboration across multiple team members. We are able to manage and compare individual changes made on current codes and edit without affecting other people's work. Code quality is also guaranteed as git allows us to scrutinize suggested changes committed by members before merging to main files. Moreover, features of git such as git pull ensures that every member remains in sync and git branch helps reduce the risk of conflicts and errors by allowing us to edit on different branches.  
+        
+            \textbf{Pair programming:} By using strategies such as LiveShare on Visual Studio, group members were able to provide real-time feedback and continuous code review. This helped us catch mistakes that may have gone unnoticed otherwise, reducing the time needed for debugging. Working together also encouraged communication and improved productivity, which played a key role in the success of our project.
+    
+        
+        \subsection{Future Improvement}
+        
+            Based on the feedback from our mentor for our emulator codes, an area to improve on for the future would be \textbf{code commenting}. 
+            
+            Initially, we tried to make our code clear and readable for others and minimize the need for comments by adopting methods such as splitting the code into modules and smaller functions with easy-to-understand names. We believed that by writing the code to be as obvious to understand as possible, we could minimize the amount of comments needed However, we later realised that commenting our code is still a necessity after the mentor meeting on 16th June. Our mentor reminded us that comments, particularly documentation comments for functions intended for use by other modules, would help other people better understand code functionality and also facilitate our group collaboration as it is easier for members to improve on current codes with the knowledge on what functions our current codes should perform. 
+            
+            We have since acted upon the feedback by ensuring that all our current codes are equipped with proper documentation comments for all functions. Specifically, to follow through with this on the assembly program as well, we added comment processing to the assembler which allowed us to explain what the code does, which is vitally important since assembly does not support variable names that we could use to make the code obvious, and the closest thing to variable names would be labels, but there is a limit to the expressiveness provided by labels, and placing too many labels would mean that the assembler would have to keep track of more symbols unnecessarily.
+        
+    \end{adjustwidth}
+
+    \newpage
+    
+    \section{Individual Reflection}
+    
+        \begin{adjustwidth}{2em}{0pt}
+        \subsection{Hongshuo Liu (hl2622)}
+    
+        Reflecting on the feedback received from my project group, I am glad to know that I was a very good group mate. Although I was initially unfamiliar with C, I tried my best to contribute to our projects and was not afraid of clarifying doubts I had with my team members. Throughout the project, I strove to maintain open communication with other members and gave constructive feedback on others' work. I also proactively volunteered for tasks to ensure my balanced contribution to the project. Thanks to this project, I have gained an invaluable insight into the complexities of programming projects, which enhanced my experience in this domain. It also equipped me with more experience on collaborative programming methods as well as C language.
+        
+        
+        \subsection{Jerome Leow (jhl21)}
+        
+        Because I had more experience with C programming, I contributed more actively to the programming aspects of the project, helping my teammates with code structure challenges and helping them debug whenever they needed help. This collaborative effort not only reinforced my technical C programming skills but also taught me valuable lessons in teamwork and project management. I was able to practice the skills required to work effectively as a group in software development, like using Git branching so that development work could take place concurrently, and using features in Gitlab to set deadlines and milestones. I also felt that my soft skills were put to the challenge, in terms of playing a supportive role by assisting my teammates with the various challenges they encountered. My goal was to not only help them find and fix their bugs whenever they required help, but also teach them tips and tricks so that they are able to improve. I believe that this was a successful endeavor seeing how my teammates were able to be a lot more self reliant when working on the assembler and Raspberry Pi as compared to during the emulator when they were all new to C. Overall, this was a fruitful and enriching experience that challenged and strengthened both my technical skills and soft people skills.
+        
+        \subsection{Scott Loo (syl121)}
+       This project has been a rewarding journey for me, as it not only broadened my technical knowledge but also provided valuable insights into collaborative teamwork. Working on a group project for the first time, I gained hands-on experience with Git and learnt how to effectively manage different branches, optimising collaboration with my peers. Furthermore, this experience enhanced my communication skills by fostering effective dialogue, active listening, and constructive feedback among team members. Overall, this project has been instrumental in my personal and professional development, equipping me with the technical expertise and interpersonal skills necessary for successful collaboration and project execution.
+       
+        \subsection{Yukie Zhao (yz8922)}
+        From feedback from the peer assessment, I learned that I work very well with others. I am grateful for the support of my teammates throughout the project, working together has given me invaluable insight and experience in collaboration and communication. Despite also being quite new to programming in C, I actively sought help from my group members and asked questions where necessary to improve my skills to contribute effectively to the project. I ensured everything I produced was to the utmost of my ability and proactively assisted with many aspects of the project in any way I could. I have thoroughly enjoyed this group project experience. Moving forward, I would like to continue to strengthen my knowledge and improve my technical skills for future group programming projects.
+    
+    \end{adjustwidth}
+    
+    
 \end{document}
+
+
