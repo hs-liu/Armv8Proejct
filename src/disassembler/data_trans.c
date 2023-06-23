@@ -8,7 +8,7 @@
 #include "data_trans.h"
 
 /**
- * Prints the usage of the program to stderr
+ * disassemble load/store instructions for unsigned immediate offset
  * 
  * @param fp the file to print to
  * @param imm12 the immediate value
@@ -39,7 +39,7 @@ void sdt_uimm(FILE *fp, uint64_t imm12, uint8_t xn, uint8_t rt, uint8_t l, uint8
 }
 
 /**
- * Prints the usage of the program to stderr
+ * disassemble load/store instructions for register offset
  * 
  * @param fp the file to print to
  * @param xm the register number of the offset register
@@ -61,7 +61,7 @@ void sdt_regoffset(FILE *fp, uint8_t xm, uint8_t xn, uint8_t rt, uint8_t l, uint
 }
 
 /**
- * Prints the usage of the program to stderr
+ * disassemble load/store instructions for pre-indexed offset
  * 
  * @param fp the file to print to
  * @param simm9 the immediate value
@@ -84,7 +84,7 @@ void sdt_preind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uint
 }
 
 /**
- * Prints the usage of the program to stderr
+ * disassemble load/store instructions for post-indexed offset
  * 
  * @param fp the file to print to
  * @param simm9 the immediate value
@@ -107,7 +107,7 @@ void sdt_postind(FILE *fp, int64_t simm9, uint8_t xn, uint8_t rt, uint8_t l, uin
 }
 
 /**
- * Prints the usage of the program to stderr
+ * disassemble load/store instructions for load literal
  * 
  * @param fp the file to print to
  * @param simm9 the immediate value
@@ -127,7 +127,7 @@ void execute_load_literal(FILE *fp, reg_t *PC, uint32_t instruction, uint8_t sf)
 }
 
 /**
- * Prints the usage of the program to stderr
+ * determine the type of load/store instruction and call the appropriate function
  * 
  * @param fp the file to print to
  * @param instruction the instruction to execute
