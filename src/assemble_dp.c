@@ -511,6 +511,13 @@ void assemble_data_processing_single_op_opcode_instruction(
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
 
+/**
+ * Assembles a data processing instruction for two operands and no destination
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void assemble_data_processing_two_op_no_dest_opcode_instruction(
     char *opcode,
     char *line,
@@ -552,6 +559,13 @@ void assemble_data_processing_two_op_no_dest_opcode_instruction(
     memcpy(state->memory + state->address, &instruction, WORD_SIZE_BYTES);
 }
 
+/**
+ * Assembles a data processing instruction
+ * 
+ * @param opcode the opcode of the instruction
+ * @param line the line containing the instruction
+ * @param state the assembler state
+ */
 void assemble_data_processing_instruction(char *opcode, char *line, assembler_state_t *state) {
     if (is_data_processing_multiply_opcode(opcode)) {
         assemble_data_processing_multiply_instruction(opcode, line, state);

@@ -6,8 +6,12 @@
 
 #include "symbol_table.h"
 
-/*
+/**
 * Hashes a string using the algorithm from the Java string hash function.
+*
+* @param key the string to hash
+* @param len the length of the string
+* @return the hash value
 */
 static int hash(char *key, int len) {
     int hash = 0;
@@ -17,8 +21,10 @@ static int hash(char *key, int len) {
     return hash;
 }
 
-/*
+/**
 * Creates a new hashmap.
+*       
+* @return the new hashmap
 */
 hashmap_t *hashmap_create(void) {
     hashmap_t *map = malloc(sizeof(hashmap_t));
@@ -27,8 +33,12 @@ hashmap_t *hashmap_create(void) {
     return map;
 }
 
-/*
+/**
 * Finds an entry in the hashmap with the given key.
+*  
+* @param map the hashmap
+* @param key the key to search for
+* @return the entry with the given key, or NULL if it does not exist
 */
 hashmap_entry_t *hashmap_find_entry(hashmap_t *map, char *key) {
     int keylen = strlen(key);
@@ -43,8 +53,12 @@ hashmap_entry_t *hashmap_find_entry(hashmap_t *map, char *key) {
     return NULL;
 }
 
-/*
+/**
 * Gets the value associated with the given key.
+*
+* @param map the hashmap
+* @param key the key to set
+* @param value the value to set
 */
 void hashmap_set(hashmap_t *map, char *key, uint64_t value) {
     hashmap_entry_t *entry = hashmap_find_entry(map, key);
@@ -75,8 +89,10 @@ void hashmap_set(hashmap_t *map, char *key, uint64_t value) {
     map->size++;
 }
 
-/*
+/**
 * Frees the memory used by the hashmap.
+* 
+* @param map the hashmap
 */
 void hashmap_free(hashmap_t *map) {
     for (int i = 0; i < HASHMAP_SIZE; i++) {
