@@ -12,6 +12,7 @@
 \usepackage{graphicx}
 \usepackage[export]{adjustbox}
 \usepackage{titlesec}
+\usepackage{placeins}
 \usepackage[figurename=Fig]{caption}
 
 \graphicspath{{images/}}
@@ -27,17 +28,17 @@
     % set page layout
     a4paper,
     total={170mm,257mm},
-    left=24mm,
-    right=24mm,
-    top=24mm,
-    bottom=24mm
+    left=22mm,
+    right=22mm,
+    top=20mm,
+    bottom=20mm
 }
 
 \title{C Project Final Report}
 \titleformat*{\section}{\large\bfseries}
 \titleformat*{\subsection}{\bfseries}
 \author{hl2622, jhl21, syl121, yz8922}
-\date{June 2023}
+\date{23rd June 2023}
 
 \begin{document}
 
@@ -59,10 +60,14 @@
                 \item \texttt{assemble\_dp.c / assemble\_dp.h }: contains functions to assemble data processing instructions, as well as aliases of those instructions like \texttt{cmp}, \texttt{cmn}, and \texttt{tst}.
                 \item \texttt{utils.c / utils.h}: contains all the constants, which include the ones reused from the emulator code, as well as functions that are generally useful throughout the assembler, for example \texttt{get\_register} which takes in a string representation of a register and outputs its size and register index.
             \end{itemize}
-    
-        \subsection{Implementation}
+        \subsection{Challenges}
+        In the assembler implementation, one of challenges is the need to
+keep track of the assignment of addresses to labels, which arises from the requirement to resolve labels and assign
+appropriate memory addresses during the assembly process.
         
-            We decided to implement a "Two Pass" assembler to keep our code simple. 
+        \subsection{Implementation and Discussion}
+        
+            To overcome this challenge, we decided to implement a "Two Pass" assembler.
             
             \textbf{First pass}: On the first pass, the assembler will scan the file for label declarations, then add an entry to the symbol table mapping the address to the label. All other types of instructions and directives are ignored on the first pass, and only used to keep track of the current address. After the first pass, we know how large the generated binary file will need to be, so a buffer with that size is allocated for the assembler to write into on the second pass. 
         
@@ -78,9 +83,10 @@
         The objective of this section is to control the green LED (ACT) on our given Raspberry Pi 3B to flash in a constant frequency and ensuring it stays in an infinite loop.
         
         \begin{adjustwidth}{2em}{0pt}
-        \subsection{Implementation} 
+        \subsection{Challenges}
+        \textbf{Using C: }We first wrote our program in C with the intention of using the GCC compiler to generate the relevant assembly code to then be passed to the assembler from Part II. Our plan was to modify the assembly code to ensure it only used instructions allowed by our assembler. However, after completing the C file, we realised that the process of modifying the generated assembly code would be too time-consuming and challenging in comparison to simply rewriting the assembly code from scratch.
+        \subsection{Implementation and Discussion} 
          
-             \textbf{Using C: }We first wrote our program in C with the intention of using the GCC compiler to generate the relevant assembly code to then be passed to the assembler from Part II. Our plan was to modify the assembly code to ensure it only used instructions allowed by our assembler. However, after completing the C file, we realized that the process of modifying the generated assembly code would be too time-consuming and challenging in comparison to simply rewriting the assembly code from scratch.
             
             \textbf{Using assembly: }For the reasons above, we then made the decision to start over again in order to write the required A64 assembly program afresh instead of generating it from C. This allowed us to have direct control over the instructions used, ensuring compliance with the limitations of the specified assembler. We thoroughly analysed the given project specification to fully understand the Mailbox peripheral in order to try and design an efficient assembly program specifically tailored to make the LED blink. This decision also gave us better control of relevant memory addresses needed to operate the LED and requests containing the buffer address to be written to the mailbox.
     
@@ -92,7 +98,7 @@
             
             \textbf{Loop: }A separate wait loop was used to create a delay of around \textit{1 second} between each time the status of the LED is toggled. We were able to simplify the code through utilization of the natural fall-through execution order in assembly by designing and refactoring each action, reducing the number of conditional branches required.
     
-        \newpage
+      
         
         \subsection{Debugging}
     
@@ -110,27 +116,33 @@
         \subsection{Support for Inline Comments}
         
             \begin{figure}[h]
-            \begin{subfigure}{0.5\textwidth}
-            \includegraphics[width=1.0\linewidth, height=3cm]{image/fig1.png} 
-            \caption{Fig 3.1.0}
-            \end{subfigure}
-            \begin{subfigure}{0.5\textwidth}
-            \includegraphics[width=1.0\linewidth, height=3.5cm]{image/fig2.png}
-            \caption{Fig 3.1.1}
-            \end{subfigure}
+                \centering
+                \begin{subfigure}{0.45\linewidth}
+                    \centering
+                    \includegraphics[width=1.0\linewidth, height=3cm]{image/fig1.png} 
+                \end{subfigure}
+                \begin{subfigure}{0.45\linewidth}
+                    \centering
+                    \includegraphics[width=1.1\linewidth, height=3cm]{image/fig2.png}
+                \end{subfigure}
+                \caption{Application of Inline Commenting in Mailbox System}
+                \label{fig:commenting}
             \end{figure}
         
-            The support for inline comments \textit{(Fig 3.1.0, Fig 3.1.1)} was very useful for us while writing the assembly code to control the Raspberry Pi green LED light, since it allowed us to comment our assembly code extensively and keep track of which registers are supposed to hold which values. 
+            The support for inline comments \ref{fig:commenting} was very useful for us while writing the assembly code to control the Raspberry Pi green LED light, since it allowed us to comment our assembly code extensively and keep track of which registers are supposed to hold which values. 
             
             The code required to extend our assembler to support inline comments was very short since the design of our assembler was already very modular with small functions that dealt with the file line by line, so it was very easy to add in a short 4 line pre-processing function to search for the \texttt{"//"} substring and null-terminate the string early if it exists. 
             
             On the other hand, we did not feel that implementing block comments would add significant value to us while writing the assembly code for the Raspberry Pi since we already had inline comments, and the code needed to support the block comments would be more complex since we would have to keep track of whether a particular line starts within a block comment. Since the main focus of our extension was the disassembler, and not the support for comments which we only implemented out of necessity for documenting the assembly code, we did not implement block comments.
         
-        
         \subsection{Disassembler}
-    
-            We created a disassembler specifically designed to convert binary files into assembly code. To achieve this, we utilized certain parts of our emulator code to help decode instructions. However, we realized that we couldn't reuse most of the emulator code. Unlike the emulator, the disassembler requires us to manually write the entire assembly code instead of relying on pre-calculated functions like register shifting.
+
+            \subsubsection{Challenges}
+            We created a disassembler specifically designed to convert binary files into assembly code. To achieve this, we utilised certain parts of our emulator code to help decode instructions. However, we realized that we couldn't reuse most of the emulator code. Unlike the emulator, the disassembler requires us to manually write the entire assembly code instead of relying on pre-calculated functions like register shifting.
+
+            \newpage
             
+            \subsubsection{Implementation and Discussion}
             Despite this challenge, we developed generic functions that can handle multiple instructions, reducing code repetition and making our code easier to read. Another difficulty we encountered was the loss of branch label information in binary files. As a result, the disassembled code provides absolute addresses for branches instead of specific labels. 
         
             Similar to our emulator, we divided our code into different modules: 
@@ -146,21 +158,21 @@
         
             We disassemble all of these components and generate an output file. The output file can be specified as an argument in our main function.
         
-        \subsection{Testing the disassembler}
+        \subsubsection{Testing the disassembler}
         
             \begin{figure}[h]
-            \begin{subfigure} {1.0\linewidth}
-                \includegraphics[width=1.0\linewidth]{image/fig3.png} 
-                \caption{Fig 3.3.0}
-            \end{subfigure}
+            \centering
+            \includegraphics[width=0.9\linewidth]{image/fig3.png} 
+            \caption{Test Result of Disassembler}
+            \label{fig:test}
             \end{figure}
         
             To test the functionality of our disassembler, we utilised the binary files provided by the test suites given by the department. Our testing process involved multiple steps. Firstly, we employed our disassembler to convert the binary files into assembly code. Next, we utilised assembler to assemble the assembly code back into binary files. By comparing the resulting binary files, we assessed the performance and accuracy of our disassembler.
         
-            To automate this testing procedure, we developed a Python script that encompassed 593 test cases. This script facilitated the seamless execution of the entire testing process. During these tests, we encountered and resolved various bugs in our disassembler code, ensuring its reliability and functionality.
+            To automate this testing procedure, we developed a Python script that encompassed 593 test cases\ref{fig:test}. This script facilitated the seamless execution of the entire testing process. During these tests, we encountered and resolved various bugs in our disassembler code, ensuring its reliability and functionality.
     
      
-        \subsection{Effectiveness of our testing}
+        \subsubsection{Effectiveness of our testing}
             During the rigorous testing phase, we conducted a comprehensive evaluation of our disassembler, meticulously refining its performance and instilling confidence in its operation. With an extensive suite of 593 test cases encompassing various assembly functions, we have developed a considerable level of confidence in the reliability of our disassembler.
             
             However, it is important to note that most of these test cases consist of assembly codes spanning approximately 3 to 7 lines. We did not specifically test large binary files containing thousands of lines of assembly code. Although we anticipate minimal impact since each instruction is handled individually and executes pure functions, it remains an area where further testing could be beneficial.
@@ -222,5 +234,3 @@
     
     
 \end{document}
-
-
